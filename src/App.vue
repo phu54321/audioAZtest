@@ -1,8 +1,10 @@
-<template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
-  </div>
+<template lang='pug'>
+#app.container
+  nav.navbar.is-spaced
+    .navbar-brand
+      b-icon.m-r-xs.m-t-xs(icon='ab-testing', size='is-medium')
+      b-icon.m-r-md.m-t-xs(icon='volume-high', size='is-medium')
+      span.title Audio A-Z testing
 </template>
 
 <script lang="ts">
@@ -18,12 +20,4 @@ export default class App extends Vue {}
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
 </style>
