@@ -1,5 +1,7 @@
 # audio-az-test
 
+Simple AB testing framework for audio. Useful for comparing various audio codecs. Powered by [ffmpeg.js](https://github.com/ffmpegjs/ffmpeg.js).
+
 ## Project setup
 ```
 npm install
