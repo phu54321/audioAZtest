@@ -13,24 +13,45 @@
         span.file-cta
           b-icon.file-icon(icon='file-upload')
           .file-label Load
-        span.file-name {{ file ? file.name : 'Choose an input audio' }}
+        span.file-name {{ filename || 'Choose an input audio' }}
 
 </template>
 
 <script lang="ts">
+
 import Vue from 'vue'
 import HelloWorld from './components/HelloWorld.vue'
+import { createWorker } from './ffmpeg'
 
 export default Vue.extend({
   data () {
     return {
-      file: null as File | null
+      fileData: null as Uint8Array | null,
+      filename: ''
     }
   },
   methods: {
     onFileInput (ev: Event) {
       const files = (ev.target as HTMLInputElement).files
-      this.file = files ? files[0] : null
+      const file = files ? files[0] : null
+      if (file) {
+        this.filename = file.name
+
+        const reader = new FileReader()
+        reader.readAsArrayBuffer(file)
+        reader.onload = async () => {
+          const fileData = new Uint8Array(reader.result as ArrayBuffer)
+          this.fileData = fileData
+
+          console.log('Creating worker')
+          const worker = await createWorker()
+          console.log('Writing to fs')
+          await worker.write('test.avi', fileData)
+          console.log('Reading to fs')
+          const { data } = await worker.read('test.avi')
+          console.log(data)
+        }
+      }
     }
   }
 })
