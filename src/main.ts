@@ -4,6 +4,7 @@ import Buefy from 'buefy'
 import 'buefy/dist/buefy.css'
 import './spacing.scss'
 import '@mdi/font/css/materialdesignicons.min.css'
+
 Vue.use(Buefy)
 
 Vue.config.productionTip = false

@@ -46,14 +46,11 @@ export default Vue.extend({
 
           const ext = fileName.slice(fileName.search('\\.') || fileName.length)
 
-          console.log('Creating worker')
           const worker = await createWorker()
-          console.log(`Writing to fs (rawInput${ext})`)
           await worker.writeText(`rawInput${ext}`, new Uint8Array(fileData))
-          console.log(`Converting to wav...`)
           await worker.run(`-i rawInput${ext} input.wav`)
           const { data } = await worker.read('input.wav')
-          console.log(data)
+          worker.worker.terminate()
         }
       }
     }
