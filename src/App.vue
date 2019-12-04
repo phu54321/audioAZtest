@@ -12,17 +12,24 @@
   // 음원 선택부
   section.section
     .container
-      h1.title 1. 음원 파일을 선택하세요
+      .title.is-3 1. 음원 파일을 선택하세요
 
       .file.has-name
         label.file-label
           input.file-input(type='file', name='audio', @change='onFileInput')
           span.file-cta
             b-icon.file-icon(icon='file-upload')
-            .file-label Load
-          span.file-name {{ fileName || 'Choose an input audio' }}
+            .file-label 업로드
+          span.file-name {{ fileName || '음원파일을 선택하세요' }}
 
-  // 음원
+  // 파이프라인 목록
+  section.section
+    .container
+      .title.is-3 2. 비교할 대상 2개를 선택하세요
+      b-field
+        b-autocomplete(:keep-first='true', :open-on-focus='true', :data='pipelineList', field='name', placeholder='Select sound A', @select='option => selectPipeline(0, option)')
+      b-field
+        b-autocomplete(:keep-first='true', :open-on-focus='true', :data='pipelineList', field='name', placeholder='Select sound B', @select='option => selectPipeline(1, option)')
 </template>
 
 <script lang="ts">
@@ -30,6 +37,8 @@
 import Vue from 'vue'
 import HelloWorld from './components/HelloWorld.vue'
 import { createWorker } from './ffmpeg'
+import AudioPipelineList from './audioPipeline/list'
+import { FFmpegAudioPipeline, applyAudioPipeline } from './audioPipeline'
 
 export default Vue.extend({
   data () {
@@ -37,7 +46,17 @@ export default Vue.extend({
       isLoading: false,
 
       origWavData: null as Uint8Array | null,
-      fileName: ''
+      fileName: '',
+
+      pipelines: [null, null] as (FFmpegAudioPipeline | null)[]
+    }
+  },
+  computed: {
+    pipelineList () {
+      return AudioPipelineList
+    },
+    isPipelineSelected (): boolean {
+      return !!(this.pipelines[0] && this.pipelines[1])
     }
   },
   methods: {
