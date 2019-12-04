@@ -9,27 +9,25 @@
           b-icon.m-r-md.m-t-xs(icon='volume-high', size='is-medium')
           span 오디오 블라인드 테스트 (w/ ffmpeg)
 
-  // 음원 선택부
-  section.section
-    .container
-      .title.is-3 1. 음원 파일을 선택하세요
+  .container.has-text-centered.m-t-lg
+    b-steps(v-model='activeStep', :has-navigation='false')
+      b-step-item(label='Audio')
+        .title 1. 음원 파일을 선택하세요
+        .file.has-name.flex-centered
+          label.file-label
+            input.file-input(type='file', name='audio', @change='onFileInput')
+            span.file-cta
+              b-icon.file-icon(icon='file-upload')
+              .file-label 업로드
+            span.file-name {{ fileName || '음원파일을 선택하세요' }}
 
-      .file.has-name
-        label.file-label
-          input.file-input(type='file', name='audio', @change='onFileInput')
-          span.file-cta
-            b-icon.file-icon(icon='file-upload')
-            .file-label 업로드
-          span.file-name {{ fileName || '음원파일을 선택하세요' }}
-
-  // 파이프라인 목록
-  section.section
-    .container
-      .title.is-3 2. 비교할 대상 2개를 선택하세요
-      b-field
-        b-autocomplete(:keep-first='true', :open-on-focus='true', :data='pipelineList', field='name', placeholder='Select sound A', @select='option => selectPipeline(0, option)')
-      b-field
-        b-autocomplete(:keep-first='true', :open-on-focus='true', :data='pipelineList', field='name', placeholder='Select sound B', @select='option => selectPipeline(1, option)')
+      b-step-item(label='Codec')
+        .title 2. 비교할 코덱 2개를 선택하세요
+        b-field
+          b-autocomplete(:keep-first='true', :open-on-focus='true', :data='pipelineList', field='name', placeholder='Select sound A', @select='option => selectPipeline(0, option)')
+        b-field
+          b-autocomplete(:keep-first='true', :open-on-focus='true', :data='pipelineList', field='name', placeholder='Select sound B', @select='option => selectPipeline(1, option)')
+        b-button(type='is-primary', v-if='isPipelineSelected', @click='startABtest') 테스트 시작
 </template>
 
 <script lang="ts">
@@ -40,11 +38,16 @@ import { createWorker } from './ffmpeg'
 import AudioPipelineList from './audioPipeline/list'
 import { FFmpegAudioPipeline, applyAudioPipeline } from './audioPipeline'
 
+const STEP_AUDIO = 0
+const STEP_PIPELINE = 1
+const STEP_ABTEST = 2
+const STEP_ABTEST_RESULT = 3
+
 export default Vue.extend({
   data () {
     return {
       isLoading: false,
-
+      activeStep: STEP_AUDIO,
       origWavData: null as Uint8Array | null,
       fileName: '',
 
@@ -60,6 +63,9 @@ export default Vue.extend({
     }
   },
   methods: {
+    selectPipeline (idx: number, pipeline: FFmpegAudioPipeline) {
+      this.pipelines[idx] = pipeline
+    },
     onFileInput (ev: Event) {
       const files = (ev.target as HTMLInputElement).files
       const file = files ? files[0] : null
@@ -83,6 +89,7 @@ export default Vue.extend({
 
             this.origWavData = data
             this.fileName = fileName
+            this.activeStep = STEP_PIPELINE
           } catch (e) {
             // IMPORTANT!
             // To prevent RangeError at reateWorker.js you should manually modify
@@ -97,10 +104,17 @@ export default Vue.extend({
           }
         }
       }
+    },
+    startABtest () {
+      // TODO: add ab testing code
     }
   }
 })
 </script>
 
 <style>
+.flex-centered {
+  justify-content: center !important;
+}
+
 </style>
