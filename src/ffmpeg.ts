@@ -13,7 +13,8 @@ export async function createWorker (): Promise<FFmpegWorkerInterface> {
   const worker = FFmpeg.createWorker({
     corePath: 'ffmpeg-core.js',
     workerPath: 'worker.min.js',
-    logger: (m: any) => console.log('message', m)
+    // eslint-disable-next-line
+    logger: (m: any) => console.log('message', m.message)
   })
   await worker.load()
   return worker
