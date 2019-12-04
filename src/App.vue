@@ -23,11 +23,13 @@
 
       b-step-item(label='Codec')
         .title 2. 비교할 코덱 2개를 선택하세요
+
         b-field
-          b-autocomplete(:keep-first='true', :open-on-focus='true', :data='pipelineList', field='name', placeholder='Select sound A', @select='option => selectPipeline(0, option)')
+          b-select(v-model='pipelines[0]',  placeholder='Select sound A', expanded)
+            option(v-for='pipeline in pipelineList', :value='pipeline', :key='pipeline.name') {{ pipeline.name }}
         b-field
-          b-autocomplete(:keep-first='true', :open-on-focus='true', :data='pipelineList', field='name', placeholder='Select sound B', @select='option => selectPipeline(1, option)')
-        b-button(type='is-primary', v-if='isPipelineSelected', @click='startABtest') 테스트 시작
+          b-select(v-model='pipelines[1]',  placeholder='Select sound B', expanded)
+            option(v-for='pipeline in pipelineList', :value='pipeline', :key='pipeline.name') {{ pipeline.name }}
 </template>
 
 <script lang="ts">
@@ -47,7 +49,7 @@ export default Vue.extend({
   data () {
     return {
       isLoading: false,
-      activeStep: STEP_AUDIO,
+      activeStep: STEP_PIPELINE,
       origWavData: null as Uint8Array | null,
       fileName: '',
 
