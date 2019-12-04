@@ -1,6 +1,8 @@
 <template lang='pug'>
 #app
-  b-loading(:active='isLoading')
+  b-loading(:active='!!loadingText')
+    .loading-icon
+    .loading-text(v-if='loadingText') {{loadingText}}
   section.hero.is-primary
     .hero-body
       .container
@@ -25,11 +27,39 @@
         .title 2. 비교할 코덱 2개를 선택하세요
 
         b-field
-          b-select(v-model='pipelines[0]',  placeholder='Select sound A', expanded)
+          b-select(v-model='pipelines[0]',  placeholder='비교소리 A', expanded)
             option(v-for='pipeline in pipelineList', :value='pipeline', :key='pipeline.name') {{ pipeline.name }}
         b-field
-          b-select(v-model='pipelines[1]',  placeholder='Select sound B', expanded)
+          b-select(v-model='pipelines[1]',  placeholder='비교소리 B', expanded)
             option(v-for='pipeline in pipelineList', :value='pipeline', :key='pipeline.name') {{ pipeline.name }}
+
+        b-button(type='is-primary', :disabled='!isPipelineSelected', @click='prepareAudioTest') 테스트 시작
+
+      b-step-item(label='Blind testing')
+        .title 3. 둘 중 더 소리가 좋은걸 선택하세요.
+
+        table.table.is-bordered.margin-center
+          tr
+            th(@click='pickShuffledAudio(0)') 1번 선택
+            th(@click='pickShuffledAudio(1)') 2번 선택
+          tr
+            td
+              b-icon(icon='play-circle-outline', size='is-large', @click='playShuffledAudio(0)')
+            td
+              b-icon(icon='play-circle-outline', size='is-large', @click='playShuffledAudio(1)')
+
+        .message.is-info
+          .message-header 결과 요약
+          .message-body.has-text-left
+            p
+              i 파일: {{fileName}}
+            p
+              b.m-r-xs 비교군 A:&nbsp;
+              | aptX HD
+            p
+              b.m-r-xs 비교군 B:&nbsp;
+              | aptX
+
 </template>
 
 <script lang="ts">
@@ -43,17 +73,26 @@ import { FFmpegAudioPipeline, applyAudioPipeline } from './audioPipeline'
 const STEP_AUDIO = 0
 const STEP_PIPELINE = 1
 const STEP_ABTEST = 2
-const STEP_ABTEST_RESULT = 3
+
+type TestHistoryData = 'A' | 'B'
 
 export default Vue.extend({
   data () {
     return {
-      isLoading: false,
-      activeStep: STEP_PIPELINE,
+      // Audio selection related
+      loadingText: '',
+      activeStep: STEP_ABTEST,
       origWavData: null as Uint8Array | null,
       fileName: '',
 
-      pipelines: [null, null] as (FFmpegAudioPipeline | null)[]
+      // Pipeline related
+      pipelines: [null, null] as (FFmpegAudioPipeline | null)[],
+      convertedAudios: [] as HTMLAudioElement[],
+
+      // AB test related
+      currentShuffledAudio: [] as HTMLAudioElement[],
+      shuffledTestAIndex: 0,
+      testHistory: [] as TestHistoryData[]
     }
   },
   computed: {
@@ -65,15 +104,12 @@ export default Vue.extend({
     }
   },
   methods: {
-    selectPipeline (idx: number, pipeline: FFmpegAudioPipeline) {
-      this.pipelines[idx] = pipeline
-    },
     onFileInput (ev: Event) {
       const files = (ev.target as HTMLInputElement).files
       const file = files ? files[0] : null
       if (file) {
         const fileName = file.name
-        this.isLoading = true
+        this.loadingText = 'WAV로 파일 불러들이는 중...'
 
         // Read & convert to WAV
         const reader = new FileReader()
@@ -102,13 +138,68 @@ export default Vue.extend({
               message: e.toString()
             })
           } finally {
-            this.isLoading = false
+            this.loadingText = ''
           }
         }
       }
     },
-    startABtest () {
-      // TODO: add ab testing code
+
+    async prepareAudioTest () {
+      this.loadingText = '오디오 변환중...'
+      try {
+        const promises = this.pipelines.map(async pipeline => applyAudioPipeline(pipeline!, this.origWavData!))
+        const converted = await Promise.all(promises)
+
+        this.convertedAudios = converted.map(wav => {
+          const audio = new Audio()
+          const blob = new Blob([wav], { type: 'audio/wav' })
+          const url = window.URL.createObjectURL(blob)
+          audio.src = url
+          return audio
+        })
+        this.testHistory = []
+        this.activeStep = STEP_ABTEST
+
+        this.initAudioTest()
+      } finally {
+        this.loadingText = ''
+      }
+    },
+
+    initAudioTest () {
+      const [audioA, audioB] = this.convertedAudios
+
+      this.stopAllAudio()
+
+      if (Math.random() >= 0.5) {
+        this.currentShuffledAudio = [audioA, audioB]
+        this.shuffledTestAIndex = 0
+      } else {
+        this.currentShuffledAudio = [audioB, audioA]
+        this.shuffledTestAIndex = 1
+      }
+    },
+
+    stopAllAudio () {
+      for (let j = 0; j < 2; j++) {
+        this.convertedAudios[j].pause()
+        this.convertedAudios[j].currentTime = 0
+      }
+    },
+
+    playShuffledAudio (idx: number) {
+      this.stopAllAudio()
+      this.currentShuffledAudio[idx].play()
+    },
+
+    pickShuffledAudio (idx: number) {
+      if (this.shuffledTestAIndex === idx) {
+        this.testHistory.push('A')
+      } else {
+        this.testHistory.push('B')
+      }
+
+      this.initAudioTest()
     }
   }
 })
@@ -117,6 +208,17 @@ export default Vue.extend({
 <style>
 .flex-centered {
   justify-content: center !important;
+}
+
+.loading-text {
+  position: absolute;
+  transform: translateY(70px);
+  color: #666;
+  font-weight: bold;
+}
+
+.margin-center {
+  margin: auto;
 }
 
 </style>
