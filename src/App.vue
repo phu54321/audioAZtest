@@ -43,10 +43,8 @@
             tr
               th
                 a(href='#', @click='pickShuffledAudio(0)') 1번 선택
-                b-button 다운로드
               th
                 a(href='#', @click='pickShuffledAudio(1)') 2번 선택
-                b-button 다운로드
             tr
               td(@click='playShuffledAudio(0)')
                 b-icon(icon='play-circle-outline', size='is-large')
@@ -68,7 +66,10 @@
               table.table.is-bordered.is-fullwidth.m-t-md
                 th(:colspan='testHistoryGridColumnsPerRow') 테스트 결과
                 tr(v-for='row in testHistoryGridRows')
-                  td.is-w10p.has-text-centered(v-for='col in row') {{col}}
+                  td.is-w10p.has-text-centered(
+                    v-for='col in row',
+                    :class='{"grid-bg-A": col === "A", "grid-bg-B": col === "B"}'
+                  ) {{col}}
 
 </template>
 
@@ -79,6 +80,7 @@ import HelloWorld from './components/HelloWorld.vue'
 import { createWorker } from './ffmpeg'
 import AudioPipelineList from './audioPipeline/list'
 import { FFmpegAudioPipeline, applyAudioPipeline } from './audioPipeline'
+import { saveAs } from 'file-saver'
 
 const STEP_AUDIO = 0
 const STEP_PIPELINE = 1
@@ -130,6 +132,17 @@ export default Vue.extend({
         lastRow.fill('', oldLength, testHistoryGridColumnsPerRow)
       }
       return result
+    },
+
+    // Test related
+    testACount (): number {
+      return this.testHistory.filter(x => x === 'A').length
+    },
+    testBCount (): number {
+      return this.testHistory.filter(x => x === 'B').length
+    },
+    testTotalCount (): number {
+      return this.testACount + this.testBCount
     }
   },
   methods: {
@@ -262,6 +275,14 @@ export default Vue.extend({
 
 .is-w10p {
   width: 10%;
+}
+
+.grid-bg-A {
+  background-color: #eeee00;
+}
+
+.grid-bg-B {
+  background-color: #44ff00;
 }
 
 </style>
