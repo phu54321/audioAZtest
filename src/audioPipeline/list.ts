@@ -8,7 +8,7 @@ function mkCommand (extraOptions: string, intermediateExt: string) {
 }
 export default [
   {
-    name: '원본',
+    name: 'Original',
     commands: [
       'cp input.wav output.wav'
     ]
@@ -26,23 +26,39 @@ export default [
     commands: mkCommand('-c:a aac -b:a 320k', 'm4a')
   },
   {
-    name: 'MP3 320k (lame)',
-    commands: mkCommand('-c:a libmp3lame -b:a 320k', 'mp3')
+    name: 'MP3 128k (LAME encoder)',
+    commands: mkCommand('-c:a libmp3lame -b:a 128k', 'mp3')
   },
   {
-    name: 'MP3 192k (lame)',
+    name: 'MP3 192k (LAME encoder)',
     commands: mkCommand('-c:a libmp3lame -b:a 192k', 'mp3')
   },
   {
-    name: 'sbc',
-    commands: mkCommand('-c:a sbc', 'sbc')
+    name: 'MP3 320k (LAME encoder)',
+    commands: mkCommand('-c:a libmp3lame -b:a 320k', 'mp3')
   },
   {
-    name: 'aptX',
-    commands: mkCommand('-c:a aptx', 'aptx')
+    name: 'SBC 128k (Bad connection)',
+    commands: mkCommand('-c:a sbc -b:a 128k', 'sbc')
   },
   {
-    name: 'aptX HD',
-    commands: mkCommand('-c:a aptx_hd', 'aptx')
+    name: 'SBC 229k (Joint stereo, 44.1kHz, Middle quality)',
+    commands: mkCommand('-c:a sbc -b:a 229k', 'sbc')
+  },
+  {
+    name: 'SBC 328k (Joint stereo, 44.1khz, Moderate Quality)',
+    commands: mkCommand('-c:a sbc -b:a 328k', 'sbc')
+  },
+  {
+    name: 'aptX 128k (Bad connection)',
+    commands: mkCommand('-c:a aptx -b:a 128k', 'aptx')
+  },
+  {
+    name: 'aptX 352k (Lower latency mode, Middle quality) ',
+    commands: mkCommand('-c:a aptx -b:a 352k', 'aptx')
+  },
+  {
+    name: 'aptX HD 576k',
+    commands: mkCommand('-c:a aptx_hd -b:a 576k', 'aptx')
   }
 ] as FFmpegAudioPipeline[]
