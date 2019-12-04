@@ -46,10 +46,20 @@
               th
                 a(href='#', @click='pickShuffledAudio(1)') 2번 선택
             tr
-              td(@click='playShuffledAudio(0)')
-                b-icon(icon='play-circle-outline', size='is-large')
-              td(@click='playShuffledAudio(1)')
-                b-icon(icon='play-circle-outline', size='is-large')
+              td.has-text-centered
+                div(@click='playShuffledAudio(0)')
+                  b-icon(icon='play-circle-outline', size='is-large')
+                b-tooltip(label='다운로드', direction='is-bottom')
+                  b-button.m-t-sm(@click='downloadShuffledAudio(0)')
+                    b-icon(icon='download', size='is-small')
+                    span 다운로드
+              td.has-text-centered
+                div(@click='playShuffledAudio(1)')
+                  b-icon(icon='play-circle-outline', size='is-large')
+                b-tooltip(label='다운로드', direction='is-bottom')
+                  b-button.m-t-sm(@click='downloadShuffledAudio(1)')
+                    b-icon(icon='download', size='is-small')
+                    span 다운로드
 
           .message
             .message-header 결과 요약
@@ -105,6 +115,7 @@ export default Vue.extend({
       convertedAudios: [] as HTMLAudioElement[],
 
       // AB test related
+      currentTestId: -1,
       currentShuffledAudio: [] as HTMLAudioElement[],
       shuffledTestAIndex: 0,
       testHistory: [] as TestHistoryData[]
@@ -230,6 +241,8 @@ export default Vue.extend({
         this.currentShuffledAudio = [audioB, audioA]
         this.shuffledTestAIndex = 1
       }
+
+      this.currentTestId = (Math.random() * 1000000) | 0
     },
 
     stopAllAudio () {
@@ -242,6 +255,12 @@ export default Vue.extend({
     playShuffledAudio (idx: number) {
       this.stopAllAudio()
       this.currentShuffledAudio[idx].play()
+    },
+
+    async downloadShuffledAudio (idx: number) {
+      const url = this.currentShuffledAudio[idx].src
+      const blob = await fetch(url).then(r => r.blob())
+      saveAs(blob, `ABtest_${this.currentTestId}_${idx}.wav`)
     },
 
     pickShuffledAudio (idx: number) {
