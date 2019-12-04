@@ -1,4 +1,4 @@
-const FFmpeg = require('@ffmpeg/ffmpeg')
+const FFmpeg = require('./ffmpeg.min')
 
 interface FFmpegWorkerInterface {
   writeText(path: string, data: string | ArrayBufferView): Promise<void>
