@@ -182,7 +182,6 @@ export default Vue.extend({
             const ext = fileName.slice(fileName.search('\\.') || fileName.length)
 
             const worker = await createWorker()
-            await worker.run('-encoders')
             await worker.writeText(`rawInput${ext}`, new Uint8Array(fileData))
             await worker.run(`-i rawInput${ext} input.wav`)
             const { data } = await worker.read('input.wav')
