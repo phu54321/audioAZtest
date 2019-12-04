@@ -12,6 +12,7 @@ interface FFmpegWorkerInterface {
 export async function createWorker (): Promise<FFmpegWorkerInterface> {
   const worker = FFmpeg.createWorker({
     corePath: 'ffmpeg-core.js',
+    workerPath: 'worker.min.js',
     logger: (m: any) => console.log('message', m)
   })
   await worker.load()
