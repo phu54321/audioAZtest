@@ -14,12 +14,28 @@ export default [
     ]
   },
   {
+    name: 'AAC 96k (ffmpeg aac)',
+    commands: mkCommand('-c:a aac -b:a 96k', 'm4a')
+  },
+  {
     name: 'AAC 128k (ffmpeg aac)',
     commands: mkCommand('-c:a aac -b:a 128k', 'm4a')
   },
   {
     name: 'AAC 320k (ffmpeg aac)',
     commands: mkCommand('-c:a aac -b:a 320k', 'm4a')
+  },
+  {
+    name: 'MP3 320k (lame)',
+    commands: mkCommand('-c:a libmp3lame -b:a 320k', 'mp3')
+  },
+  {
+    name: 'MP3 192k (lame)',
+    commands: mkCommand('-c:a libmp3lame -b:a 192k', 'mp3')
+  },
+  {
+    name: 'sbc',
+    commands: mkCommand('-c:a sbc', 'sbc')
   },
   {
     name: 'aptX',

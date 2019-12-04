@@ -36,29 +36,39 @@
         b-button(type='is-primary', :disabled='!isPipelineSelected', @click='prepareAudioTest') 테스트 시작
 
       b-step-item(label='Blind testing')
-        .title 3. 둘 중 더 소리가 좋은걸 선택하세요.
+        template(v-if='isPipelineSelected')
+          .title 3. 둘 중 더 소리가 좋은걸 선택하세요.
 
-        table.table.is-bordered.margin-center
-          tr
-            th(@click='pickShuffledAudio(0)') 1번 선택
-            th(@click='pickShuffledAudio(1)') 2번 선택
-          tr
-            td
-              b-icon(icon='play-circle-outline', size='is-large', @click='playShuffledAudio(0)')
-            td
-              b-icon(icon='play-circle-outline', size='is-large', @click='playShuffledAudio(1)')
+          table.table.is-bordered.margin-center
+            tr
+              th
+                a(href='#', @click='pickShuffledAudio(0)') 1번 선택
+                b-button 다운로드
+              th
+                a(href='#', @click='pickShuffledAudio(1)') 2번 선택
+                b-button 다운로드
+            tr
+              td(@click='playShuffledAudio(0)')
+                b-icon(icon='play-circle-outline', size='is-large')
+              td(@click='playShuffledAudio(1)')
+                b-icon(icon='play-circle-outline', size='is-large')
 
-        .message.is-info
-          .message-header 결과 요약
-          .message-body.has-text-left
-            p
-              i 파일: {{fileName}}
-            p
-              b.m-r-xs 비교군 A:&nbsp;
-              | aptX HD
-            p
-              b.m-r-xs 비교군 B:&nbsp;
-              | aptX
+          .message
+            .message-header 결과 요약
+            .message-body.has-text-left
+              p
+                i 파일: {{fileName}}
+              p
+                b.m-r-xs 비교군 A:&nbsp;
+                | {{pipelines[0].name}}
+              p
+                b.m-r-xs 비교군 B:&nbsp;
+                | {{pipelines[1].name}}
+
+              table.table.is-bordered.is-fullwidth.m-t-md
+                th(:colspan='testHistoryGridColumnsPerRow') 테스트 결과
+                tr(v-for='row in testHistoryGridRows')
+                  td.is-w10p.has-text-centered(v-for='col in row') {{col}}
 
 </template>
 
@@ -77,11 +87,14 @@ const STEP_ABTEST = 2
 type TestHistoryData = 'A' | 'B'
 
 export default Vue.extend({
+  beforeDestroy () {
+    this.freeAudio()
+  },
   data () {
     return {
       // Audio selection related
       loadingText: '',
-      activeStep: STEP_ABTEST,
+      activeStep: STEP_AUDIO,
       origWavData: null as Uint8Array | null,
       fileName: '',
 
@@ -101,9 +114,34 @@ export default Vue.extend({
     },
     isPipelineSelected (): boolean {
       return !!(this.pipelines[0] && this.pipelines[1])
+    },
+    testHistoryGridColumnsPerRow () { return 10 },
+    testHistoryGridRows (): string[][] {
+      const result: string[][] = []
+      const { testHistory, testHistoryGridColumnsPerRow } = this
+      let i
+      for (i = 0; i < testHistory.length; i += testHistoryGridColumnsPerRow) {
+        result.push(testHistory.slice(i, i + testHistoryGridColumnsPerRow))
+      }
+      if (i !== testHistory.length) {
+        const lastRow = result[result.length - 1]
+        const oldLength = lastRow.length
+        lastRow.length = testHistoryGridColumnsPerRow
+        lastRow.fill('', oldLength, testHistoryGridColumnsPerRow)
+      }
+      return result
     }
   },
   methods: {
+    async freeAudio () {
+      this.convertedAudios.forEach(audio => {
+        audio.pause()
+        audio.remove()
+      })
+      this.convertedAudios = []
+      this.currentShuffledAudio = []
+    },
+
     onFileInput (ev: Event) {
       const files = (ev.target as HTMLInputElement).files
       const file = files ? files[0] : null
@@ -120,6 +158,7 @@ export default Vue.extend({
             const ext = fileName.slice(fileName.search('\\.') || fileName.length)
 
             const worker = await createWorker()
+            await worker.run('-encoders')
             await worker.writeText(`rawInput${ext}`, new Uint8Array(fileData))
             await worker.run(`-i rawInput${ext} input.wav`)
             const { data } = await worker.read('input.wav')
@@ -130,7 +169,7 @@ export default Vue.extend({
             this.activeStep = STEP_PIPELINE
           } catch (e) {
             // IMPORTANT!
-            // To prevent RangeError at reateWorker.js you should manually modify
+            // To prevent RangeError at createWorker.js you should manually modify
             // d = Uint8Array.from({...data, ~~~~~}); to d = Uint8Array.from(data);
             // at @ffmpeg/ffmpeg/src/createWorker.js
             this.$buefy.dialog.alert({
@@ -219,6 +258,10 @@ export default Vue.extend({
 
 .margin-center {
   margin: auto;
+}
+
+.is-w10p {
+  width: 10%;
 }
 
 </style>
