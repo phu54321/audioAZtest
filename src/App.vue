@@ -36,50 +36,51 @@
         b-button(type='is-primary', :disabled='!isPipelineSelected', @click='prepareAudioTest') 테스트 시작
 
       b-step-item(label='Blind testing')
-        template(v-if='isPipelineSelected')
-          .title 3. 둘 중 더 소리가 좋은걸 선택하세요.
+        .title 3. 둘 중 더 소리가 좋은걸 선택하세요.
 
-          table.table.is-bordered.margin-center
-            tr
-              th
-                a(href='#', @click='pickShuffledAudio(0)') 1번 선택
-              th
-                a(href='#', @click='pickShuffledAudio(1)') 2번 선택
-            tr
-              td.has-text-centered
-                div(@click='playShuffledAudio(0)')
-                  b-icon(icon='play-circle-outline', size='is-large')
-                b-tooltip(label='다운로드', direction='is-bottom')
-                  b-button.m-t-sm(@click='downloadShuffledAudio(0)')
-                    b-icon(icon='download', size='is-small')
-                    span 다운로드
-              td.has-text-centered
-                div(@click='playShuffledAudio(1)')
-                  b-icon(icon='play-circle-outline', size='is-large')
-                b-tooltip(label='다운로드', direction='is-bottom')
-                  b-button.m-t-sm(@click='downloadShuffledAudio(1)')
-                    b-icon(icon='download', size='is-small')
-                    span 다운로드
+        table.table.is-bordered.margin-center
+          tr
+            th
+              a(href='#', @click='pickShuffledAudio(0)') 1번 선택
+            th
+              a(href='#', @click='pickShuffledAudio(1)') 2번 선택
+          tr
+            td.has-text-centered
+              div(@click='playShuffledAudio(0)')
+                b-icon(icon='play-circle-outline', size='is-large')
+              b-tooltip(label='다운로드', direction='is-bottom')
+                b-button.m-t-sm(@click='downloadShuffledAudio(0)')
+                  b-icon(icon='download', size='is-small')
+                  span 다운로드
+            td.has-text-centered
+              div(@click='playShuffledAudio(1)')
+                b-icon(icon='play-circle-outline', size='is-large')
+              b-tooltip(label='다운로드', direction='is-bottom')
+                b-button.m-t-sm(@click='downloadShuffledAudio(1)')
+                  b-icon(icon='download', size='is-small')
+                  span 다운로드
 
-          .message
-            .message-header 결과 요약
-            .message-body.has-text-left
-              p
-                i 파일: {{fileName}}
-              p
-                b.m-r-xs 비교군 A:&nbsp;
-                | {{pipelines[0].name}}
-              p
-                b.m-r-xs 비교군 B:&nbsp;
-                | {{pipelines[1].name}}
+        b-slider.m-b-lg(v-model='currentAudioProgress', :tooltip='false')
 
-              table.table.is-bordered.is-fullwidth.m-t-md
-                th(:colspan='testHistoryGridColumnsPerRow') 테스트 결과
-                tr(v-for='row in testHistoryGridRows')
-                  td.is-w10p.has-text-centered(
-                    v-for='col in row',
-                    :class='{"grid-bg-A": col === "A", "grid-bg-B": col === "B"}'
-                  ) {{col}}
+        .message
+          .message-header 결과 요약
+          .message-body.has-text-left
+            p
+              i 파일: {{fileName}}
+            p(v-if='isPipelineSelected')
+              b.m-r-xs 비교군 A:&nbsp;
+              | {{pipelines[0].name}}
+            p(v-if='isPipelineSelected')
+              b.m-r-xs 비교군 B:&nbsp;
+              | {{pipelines[1].name}}
+
+            table.table.is-bordered.is-fullwidth.m-t-md
+              th(:colspan='testHistoryGridColumnsPerRow') 테스트 결과
+              tr(v-for='row in testHistoryGridRows')
+                td.is-w10p.has-text-centered(
+                  v-for='col in row',
+                  :class='{"grid-bg-A": col === "A", "grid-bg-B": col === "B"}'
+                ) {{col}}
 
 </template>
 
@@ -104,9 +105,12 @@ export default Vue.extend({
   },
   data () {
     return {
+      recomputeTick: 0,
+      recomputeTickInterval: null as any,
+
       // Audio selection related
       loadingText: '',
-      activeStep: STEP_AUDIO,
+      activeStep: STEP_ABTEST,
       origWavData: null as Uint8Array | null,
       fileName: '',
 
@@ -117,11 +121,29 @@ export default Vue.extend({
       // AB test related
       currentTestId: -1,
       currentShuffledAudio: [] as HTMLAudioElement[],
+      playingAudio: null as HTMLAudioElement | null,
       shuffledTestAIndex: 0,
       testHistory: [] as TestHistoryData[]
     }
   },
   computed: {
+    currentAudioTime (): number {
+      this.recomputeTick  // eslint-disable-line
+      if (!this.playingAudio) return 0
+      return this.playingAudio.currentTime
+    },
+    currentAudioProgress: {
+      get (): number {
+        this.recomputeTick  // eslint-disable-line
+        if (!this.playingAudio) return 0
+        return (this.playingAudio.currentTime / this.playingAudio.duration * 100)
+      },
+      set (newValue: number) {
+        if (!this.playingAudio) return
+        if (Math.abs(this.currentAudioProgress - newValue) < 1e-6) return
+        this.playingAudio.currentTime = this.playingAudio.duration * newValue / 100
+      }
+    },
     pipelineList () {
       return AudioPipelineList
     },
@@ -155,6 +177,14 @@ export default Vue.extend({
     testTotalCount (): number {
       return this.testACount + this.testBCount
     }
+  },
+  created () {
+    this.recomputeTickInterval = setInterval(() => {
+      this.recomputeTick++
+    }, 1 / 30)
+  },
+  destroyed () {
+    clearInterval(this.recomputeTickInterval)
   },
   methods: {
     async freeAudio () {
@@ -253,7 +283,8 @@ export default Vue.extend({
 
     playShuffledAudio (idx: number) {
       this.stopAllAudio()
-      this.currentShuffledAudio[idx].play()
+      this.playingAudio = this.currentShuffledAudio[idx]
+      this.playingAudio.play()
     },
 
     async downloadShuffledAudio (idx: number) {
