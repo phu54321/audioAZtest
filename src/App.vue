@@ -110,7 +110,7 @@ export default Vue.extend({
 
       // Audio selection related
       loadingText: '',
-      activeStep: STEP_ABTEST,
+      activeStep: STEP_AUDIO,
       origWavData: null as Uint8Array | null,
       fileName: '',
 
@@ -188,10 +188,10 @@ export default Vue.extend({
   },
   methods: {
     async freeAudio () {
-      this.convertedAudios.forEach(audio => {
+      for (const audio of this.convertedAudios) {
         audio.pause()
         audio.remove()
-      })
+      }
       this.convertedAudios = []
       this.currentShuffledAudio = []
     },
@@ -275,9 +275,9 @@ export default Vue.extend({
     },
 
     stopAllAudio () {
-      for (let j = 0; j < 2; j++) {
-        this.convertedAudios[j].pause()
-        this.convertedAudios[j].currentTime = 0
+      for (const audio of this.convertedAudios) {
+        audio.pause()
+        audio.currentTime = 0
       }
     },
 
