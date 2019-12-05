@@ -82,6 +82,9 @@
                   :class='{"grid-bg-A": col === "A", "grid-bg-B": col === "B"}'
                 ) {{col}}
 
+  footer.log-footer
+    ul.log-box(v-chat-scroll='{always: false, smooth: true}')
+      li.log(v-for='message of messages') {{message}}
 </template>
 
 <script lang="ts">
@@ -92,6 +95,7 @@ import { createWorker } from './ffmpeg'
 import AudioPipelineList from './audioPipeline/list'
 import { FFmpegAudioPipeline, applyAudioPipeline } from './audioPipeline'
 import { saveAs } from 'file-saver'
+import logging from './logging'
 
 const STEP_AUDIO = 0
 const STEP_PIPELINE = 1
@@ -132,6 +136,9 @@ export default Vue.extend({
     }
   },
   computed: {
+    messages (): string[] {
+      return logging
+    },
     currentAudioTime (): number {
       this.recomputeTick  // eslint-disable-line
       if (!this.playingAudio) return 0
@@ -339,4 +346,20 @@ export default Vue.extend({
   background-color: #44ff00;
 }
 
+.log-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 10em;
+  background: #eee;
+  padding: .5em .5em 0 .5em;
+}
+
+.log-box {
+  max-height: 100%;
+  overflow: scroll;
+  font-size: .8em;
+  font-family: monospace;
+}
 </style>
