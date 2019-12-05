@@ -126,6 +126,11 @@ export default Vue.extend({
       testHistory: [] as TestHistoryData[]
     }
   },
+  watch: {
+    activeStep () {
+      this.stopAllAudio()
+    }
+  },
   computed: {
     currentAudioTime (): number {
       this.recomputeTick  // eslint-disable-line
