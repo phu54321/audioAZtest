@@ -83,7 +83,7 @@
                 ) {{col}}
 
   footer.log-footer
-    ul.log-box(v-chat-scroll='{always: false, smooth: true}')
+    ul.log-box(v-chat-scroll='{always: false}')
       li.log(v-for='message of messages') {{message}}
 </template>
 
