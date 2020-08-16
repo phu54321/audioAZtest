@@ -16,6 +16,8 @@
           span 오디오 블라인드 테스트 (w/ ffmpeg)
 
   .container.has-text-centered.m-t-lg(v-if='testSet')
+    .title {{testSet.label}}
+    a(href='permaLink') {{permaLink}}
     tester(:testSet="testSet", @result='showResult')
 
 </template>
@@ -29,6 +31,8 @@ import ABTest from '@/components/ABTest.vue'
 import LogView from '@/components/LogView.vue'
 import Tester from '@/components/Tester.vue'
 import ResultScreen from '@/components/ResultScreen.vue'
+
+import queryString from 'query-string'
 
 import './style.scss'
 
@@ -46,9 +50,31 @@ export default class extends Vue {
   loadingText = ''
   testSet: TestSet | null = null
   testResult: TestEntry[] = []
+  jsonUrl: string | null = null
 
   mounted (): void {
-    this.loadTestSet('/snd/test.json')
+    const parsed = queryString.parse(location.search)
+    console.log(parsed)
+    let jsonUrl = parsed.jsonUrl || prompt('테스트 json 파일을 입력하세요')
+    if (!jsonUrl) {
+      alert('테스트 json이 필요합니다.')
+      return
+    }
+    if (Array.isArray(jsonUrl)) jsonUrl = jsonUrl[0]
+
+    this.jsonUrl = jsonUrl
+    try {
+      this.loadTestSet(jsonUrl)
+    } catch (e) {
+      alert('테스트 파일을 읽을 수 없습니다.')
+      throw e
+    }
+  }
+
+  get permaLink (): string {
+    const htmlUrl = window.location.href.split('?')[0].split('#')[0]
+    if (!this.jsonUrl) return htmlUrl
+    else return `${htmlUrl}?jsonUrl=${encodeURIComponent(this.jsonUrl)}`
   }
 
   beforeDestroy (): void {
