@@ -1,6 +1,6 @@
 <template lang='pug'>
 .container.has-text-centered.m-t-lg
-  ABTestN(v-if='pair', :entry0='testSet.entries[0]', :entry1='testSet.entries[1]', @pick='onPick')
+  ABTestN(v-if='pair', :entry0='pair.left', :entry1='pair.right', :n='1', @pick='onPick')
 </template>
 
 <script lang="ts">
