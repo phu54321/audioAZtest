@@ -12,7 +12,7 @@
         div(@click='playAudio(1)')
           b-icon(:icon='!audioB.paused ? "pause-circle-outline" : "play-circle-outline"', size='is-large')
 
-  b-slider.m-b-lg.m-l-lg.m-r-lg(v-model='currentAudioProgress', :tooltip='false')
+  b-slider.m-b-lg(v-model='currentAudioProgress', :tooltip='false')
 
 </template>
 

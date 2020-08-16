@@ -1,20 +1,30 @@
 export interface TestEntry {
-  label: string;
-  audio: HTMLAudioElement;
+  label: string
+  audio: HTMLAudioElement
 }
 
 export interface TestSet {
-  label: string;
-  entries: TestEntry[];
+  label: string
+  entries: TestEntry[]
 }
 
-export async function loadTestSet (jsonURL: string): Promise<TestSet> {
-  const response = await (await fetch(jsonURL)).json()
+export interface TestJsonEntry {
+  label: string
+  url: string
+  volume: number
+}
+
+export interface TestJson {
+  label: string
+  entries: TestJsonEntry[]
+}
+
+export async function loadTestSet (spec: TestJson): Promise<TestSet> {
   return {
-    label: response.label,
-    entries: await Promise.all(response.entries.map(async (entry: any): Promise<TestEntry> => {
-      const label: string = entry.label
-      const url: string = entry.url
+    label: spec.label,
+    entries: await Promise.all(spec.entries.map(async (entry): Promise<TestEntry> => {
+      const label = entry.label
+      const url = entry.url
 
       const blob = await (await fetch(url)).blob()
       const blobURL = URL.createObjectURL(blob)
