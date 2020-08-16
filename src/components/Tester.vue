@@ -63,7 +63,7 @@ export default class extends Vue {
       this.$emit('result', result)
     } else {
       const { left, right } = iter.value
-      logging.messages.push(`Comparing ${left.label} to ${right.label}`)
+      logging.messages.push(`[Test #${this.testNo}] Comparing ${left.label} to ${right.label}`)
       this.pair = iter.value
     }
   }

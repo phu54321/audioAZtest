@@ -23,7 +23,7 @@ export default class extends Vue {
   @Prop({ default: 3 }) n!: number
 
   shuffledAudios: HTMLAudioElement[] = []
-  shuffledIndexes= [0, 0]
+  shuffledIndexes = [0, 0]
   winCount = [0, 0]
 
   created (): void {
