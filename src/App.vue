@@ -54,7 +54,6 @@ export default class extends Vue {
 
   mounted (): void {
     const parsed = queryString.parse(location.search)
-    console.log(parsed)
     let jsonUrl = parsed.jsonUrl || prompt('테스트 json 파일을 입력하세요')
     if (!jsonUrl) {
       alert('테스트 json이 필요합니다.')
