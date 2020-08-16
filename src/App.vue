@@ -12,6 +12,11 @@
           b-icon.m-r-md.m-t-xs(icon='volume-high', size='is-medium')
           span 오디오 블라인드 테스트
 
+          span.button-appmode.is-pulled-right(v-if='appMode == "runner"', @click='setMode("editor")')
+            b-icon(icon='pencil-outline', size='is-medium')
+          span.button-appmode.is-pulled-right(v-if='appMode == "editor"', @click='setMode("runner")')
+            b-icon(icon='play-outline', size='is-medium')
+
   .container.has-text-centered.m-t-lg.m-l-lg.m-r-lg
     test-runner(v-if='appMode == "runner"', :testJson='testJson')
     test-editor(v-else-if='appMode == "editor"', :testJson='testJson')
@@ -30,7 +35,7 @@ import { p64Encode, p64Decode } from '@/utils/p64'
 
 import './style.scss'
 
-type AppMode = 'runner' | 'editor' | null
+type AppMode = 'runner' | 'editor'
 
 function emptyTestJson (): TestJson {
   return {
@@ -60,13 +65,13 @@ export default class extends Vue {
     }
   }
 
+  setMode (mode: AppMode): void {
+    this.appMode = mode
+  }
+
   @Watch('testJson', { deep: true })
   onTestJsonChange (s: TestJson): void {
     location.href = `#${p64Encode(JSON.stringify(s))}`
-  }
-
-  showResult (result: TestEntry[]): void {
-    this.testResult = result
   }
 }
 </script>
@@ -77,5 +82,9 @@ export default class extends Vue {
   transform: translateY(70px);
   color: #666;
   font-weight: bold;
+}
+
+.button-appmode {
+  cursor: pointer;
 }
 </style>
