@@ -1,20 +1,25 @@
 <template lang='pug'>
-nav.test-editor.panel
-  p.panel-heading
-    b-input(v-model="testJson.label", placeholder='테스트 제목')
+.test-editor.has-text-justified
+  b-field(label="케이스 제목")
+    b-input(v-model="testJson.label", placeholder='제목 없음')
 
-  a.panel-block(v-for='entry, idx of testJson.entries')
-    .entry-editor-body.has-text-justified
-      b-button.is-pulled-right(@click='removeEntry(idx)')
-        b-icon(icon='close')
-      b-field.m-t-md(label="케이스 제목")
+  table.table.is-fullwidth.is-hoverable
+    tr.thead
+      th 케이스 제목
+      th 사운드 파일 URL
+      th 음량 (0-1)
+      th
+    tr(v-for='entry, idx of testJson.entries')
+      td
         b-input(v-model="entry.label", placeholder='제목 없음')
-      b-field(label="사운드 파일 URL")
+      td
         b-input(v-model="entry.url", placeholder='https://')
-      b-field(label="(필요 시) 재생할 음량%")
+      td
         b-slider(v-model="entry.volume", :min='0', :max='1', :step='0.01')
+      td(@click='removeEntry(idx)')
+        b-icon(icon='close')
 
-  b-button.m-t-sm.is-pulled-right(@click='addEntry')
+  b-button.is-pulled-right(@click='addEntry')
     b-icon(icon='plus')
 
 </template>
