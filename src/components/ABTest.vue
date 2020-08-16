@@ -14,7 +14,7 @@
         div(@click='playAudio(1)')
           b-icon(:icon='!audioB.paused ? "pause-circle-outline" : "play-circle-outline"', size='is-large')
 
-  b-slider.m-b-lg(v-model='currentAudioProgress', :tooltip='false')
+  b-slider.m-b-lg.m-l-lg.m-r-lg(v-model='currentAudioProgress', :tooltip='false')
 
 </template>
 
@@ -40,7 +40,8 @@ export default Vue.extend({
       recomputeTickInterval: null as any,
 
       // AB test related
-      playingAudio: null as HTMLAudioElement | null
+      playingAudio: null as HTMLAudioElement | null,
+      anchorTime: null as number | null
     }
   },
   computed: {
@@ -63,7 +64,7 @@ export default Vue.extend({
       set (newValue: number) {
         if (!this.playingAudio) return
         if (Math.abs(this.currentAudioProgress - newValue) < 1e-6) return
-        this.playingAudio.currentTime = this.playingAudio.duration * newValue / 100
+        this.anchorTime = this.playingAudio.currentTime = this.playingAudio.duration * newValue / 100
       }
     }
   },
@@ -87,15 +88,15 @@ export default Vue.extend({
     },
 
     playAudio (idx: number) {
-      const currentAudioTime = this.playingAudio ? this.playingAudio.currentTime : 0
       this.pauseAudio()
       this.playingAudio = this.audios[idx]
-      this.playingAudio.currentTime = currentAudioTime
+      this.playingAudio.currentTime = this.anchorTime || 0
       this.playingAudio.play()
     },
 
     pickAudio (idx: number) {
       this.pauseAudio()
+      this.anchorTime = null
       this.$emit('pick', idx)
     }
   }
