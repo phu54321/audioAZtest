@@ -18,7 +18,7 @@
             b-icon(icon='play-outline', size='is-medium')
 
   .container.has-text-centered.m-t-lg.m-l-lg.m-r-lg
-    test-runner(v-if='appMode == "runner"', :testJson='testJson')
+    test-runner(v-if='appMode == "runner"', :testJson='testJson', @loadingMsg='updateLoadingText')
     test-editor(v-else-if='appMode == "editor"', :testJson='testJson')
 
 </template>
@@ -72,6 +72,11 @@ export default class extends Vue {
   @Watch('testJson', { deep: true })
   onTestJsonChange (s: TestJson): void {
     location.href = `#${p64Encode(JSON.stringify(s))}`
+  }
+
+  updateLoadingText (text: string | null): void {
+    if (text) this.loadingText = text
+    else this.loadingText = ''
   }
 }
 </script>
