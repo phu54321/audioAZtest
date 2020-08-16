@@ -10,10 +10,10 @@
     tr
       td.has-text-centered
         div(@click='playAudio(0)')
-          b-icon(icon='play-circle-outline', size='is-large')
+          b-icon(:icon='!audioA.paused ? "pause-circle-outline" : "play-circle-outline"', size='is-large')
       td.has-text-centered
         div(@click='playAudio(1)')
-          b-icon(icon='play-circle-outline', size='is-large')
+          b-icon(:icon='!audioB.paused ? "pause-circle-outline" : "play-circle-outline"', size='is-large')
 
   b-slider.m-b-lg(v-model='currentAudioProgress', :tooltip='false')
 
@@ -88,8 +88,10 @@ export default Vue.extend({
     },
 
     playAudio (idx: number) {
+      const currentAudioTime = this.playingAudio ? this.playingAudio.currentTime : 0
       this.pauseAudio()
       this.playingAudio = this.audios[idx]
+      this.playingAudio.currentTime = currentAudioTime
       this.playingAudio.play()
     },
 
