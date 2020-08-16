@@ -1,6 +1,5 @@
 <template lang='pug'>
 .abtest
-  .notification 둘 중 더 소리가 좋은걸 선택하세요.
   table.table.is-bordered.margin-center
     tr
       th

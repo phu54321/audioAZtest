@@ -1,5 +1,6 @@
 <template lang='pug'>
 .container.has-text-centered.m-t-lg
+  .notification 둘 중 더 소리가 좋은걸 선택하세요. (\#{{testNo}})
   ABTestN(v-if='pair', :entry0='pair.left', :entry1='pair.right', :n='1', @pick='onPick')
 </template>
 
@@ -38,6 +39,7 @@ export default class extends Vue {
   @Prop({ required: true }) testSet!: TestSet
   private pair: SortPair<TestEntry> | undefined
   private generator!: MergeSortGenerator<TestEntry>
+  private testNo = 0
 
   created (): void {
     const entries = this.testSet.entries
@@ -49,6 +51,7 @@ export default class extends Vue {
   }
 
   processIterator (iter: IteratorResult<SortPair<TestEntry>, TestEntry[]>): void {
+    this.testNo++
     if (iter.done) {
       this.pair = undefined
 
