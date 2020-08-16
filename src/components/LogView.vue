@@ -12,7 +12,7 @@ import logging from '@/logging'
 export default Vue.extend({
   computed: {
     messages (): string[] {
-      return logging
+      return logging.messages
     }
   }
 })

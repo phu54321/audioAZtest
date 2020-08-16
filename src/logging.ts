@@ -1,3 +1,5 @@
 import Vue from 'vue'
 
-export default Vue.observable(['============== Audio AB testing =============='] as string[])
+export default Vue.observable({
+  messages: ['============== Audio AB testing =============='] as string[]
+})
