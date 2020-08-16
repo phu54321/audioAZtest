@@ -9,7 +9,7 @@ import { Vue, Component, Prop } from 'vue-property-decorator'
 import { TestSet, TestEntry } from '@/testset'
 import { mergeSortGenerator, MergeSortGenerator, SortPair } from '@/utils/asyncMergeSort'
 
-import logging from '@/logging'
+import logging from '@/utils/logging'
 
 import ABTestN from '@/components/ABTestN.vue'
 import LogView from '@/components/LogView.vue'

@@ -8,7 +8,7 @@
 import { Vue, Component, Prop } from 'vue-property-decorator'
 import { TestEntry } from '@/testset'
 
-import logging from '@/logging'
+import logging from '@/utils/logging'
 
 import ABTest from '@/components/ABTest.vue'
 

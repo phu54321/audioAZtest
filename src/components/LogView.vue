@@ -7,7 +7,7 @@ footer.log-footer
 <script lang="ts">
 
 import Vue from 'vue'
-import logging from '@/logging'
+import logging from '@/utils/logging'
 
 export default Vue.extend({
   computed: {

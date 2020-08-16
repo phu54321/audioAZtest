@@ -20,7 +20,7 @@
 
 <script lang="ts">
 
-import Vue from 'vue'
+import { Vue, Component } from 'vue-property-decorator'
 import { loadTestSet, TestSet, TestEntry } from './testset'
 
 import ABTest from '@/components/ABTest.vue'
@@ -31,51 +31,48 @@ import './style.scss'
 
 export type TestHistoryData = 'A' | 'B'
 
-export default Vue.extend({
+@Component({
   components: {
     ABTest,
     LogView,
     Tester
-  },
-  mounted () {
-    this.loadTestSet('/snd/test.json')
-  },
-  beforeDestroy () {
-    this.freeTestSet()
-  },
-  data () {
-    return {
-      loadingText: '',
-
-      // Audio selection related
-      testSet: null as TestSet | null
-    }
-  },
-  methods: {
-    freeTestSet () {
-      if (!this.testSet) return
-
-      for (const { audio } of this.testSet.entries) {
-        audio.pause()
-        audio.remove()
-      }
-      this.testSet = null
-    },
-
-    async loadTestSet (jsonUrl: string) {
-      this.loadingText = '테스트 로딩중...'
-      try {
-        this.testSet = await loadTestSet(jsonUrl) // TODO: get input
-      } finally {
-        this.loadingText = ''
-      }
-    },
-
-    showResult (result: TestEntry[]) {
-      console.log(result)
-    }
   }
 })
+export default class extends Vue {
+  loadingText = ''
+  testSet: TestSet | null = null
+
+  mounted (): void {
+    this.loadTestSet('/snd/test.json')
+  }
+
+  beforeDestroy (): void {
+    this.freeTestSet()
+  }
+
+  async loadTestSet (jsonUrl: string): Promise<void> {
+    this.loadingText = '테스트 로딩중...'
+    try {
+      this.testSet = await loadTestSet(jsonUrl) // TODO: get input
+    } finally {
+      this.loadingText = ''
+    }
+  }
+
+  freeTestSet (): void {
+    if (!this.testSet) return
+
+    for (const { audio } of this.testSet.entries) {
+      audio.pause()
+      audio.remove()
+    }
+    this.testSet = null
+  }
+
+  showResult (result: TestEntry[]): void {
+    console.log(result)
+  }
+}
 </script>
 
 <style>
