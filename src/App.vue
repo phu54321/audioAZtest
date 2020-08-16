@@ -15,7 +15,6 @@
   .container.has-text-centered.m-t-lg.m-l-lg.m-r-lg
     test-runner(v-if='appMode == "runner"', :testJson='testJson')
     test-editor(v-else-if='appMode == "editor"', :testJson='testJson')
-      // TODO: add editor here
 
 </template>
 
@@ -26,6 +25,8 @@ import { TestEntry, TestJson } from './testset'
 
 import TestRunner from '@/pages/TestRunner.vue'
 import TestEditor from '@/pages/TestEditor.vue'
+
+import { p64Encode, p64Decode } from '@/utils/p64'
 
 import './style.scss'
 
@@ -54,15 +55,14 @@ export default class extends Vue {
 
   mounted (): void {
     if (location.hash) {
-      const json = location.hash.substr(1)
-      this.testJson = JSON.parse(json)
+      this.testJson = JSON.parse(p64Decode(location.hash.substr(1)))
       this.appMode = 'runner'
     }
   }
 
   @Watch('testJson', { deep: true })
   onTestJsonChange (s: TestJson): void {
-    location.href = `#${encodeURIComponent(JSON.stringify(s))}`
+    location.href = `#${p64Encode(JSON.stringify(s))}`
   }
 
   showResult (result: TestEntry[]): void {

@@ -9,9 +9,12 @@
   },
   "dependencies": {
     "@mdi/font": "^5.4.55",
+    "@types/pako": "^1.0.1",
     "buefy": "^0.8.20",
     "core-js": "^3.6.5",
     "file-saver": "^2.0.2",
+    "js-base64": "^3.4.5",
+    "pako": "^1.0.11",
     "path": "^0.12.7",
     "query-string": "^6.13.1",
     "vue": "^2.6.11",
