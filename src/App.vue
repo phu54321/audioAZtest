@@ -1,5 +1,8 @@
 <template lang='pug'>
 #app
+  b-modal(:active='!!testResult.length', trap-focus, :destroy-on-hide='true', :can-cancel='false')
+    result-screen(:result='testResult')
+
   b-loading(:active='!!loadingText')
     .loading-icon
     .loading-text(v-if='loadingText') {{loadingText}}
@@ -15,7 +18,6 @@
   .container.has-text-centered.m-t-lg(v-if='testSet')
     tester(:testSet="testSet", @result='showResult')
 
-  log-view
 </template>
 
 <script lang="ts">
@@ -26,6 +28,7 @@ import { loadTestSet, TestSet, TestEntry } from './testset'
 import ABTest from '@/components/ABTest.vue'
 import LogView from '@/components/LogView.vue'
 import Tester from '@/components/Tester.vue'
+import ResultScreen from '@/components/ResultScreen.vue'
 
 import './style.scss'
 
@@ -35,12 +38,14 @@ export type TestHistoryData = 'A' | 'B'
   components: {
     ABTest,
     LogView,
-    Tester
+    Tester,
+    ResultScreen
   }
 })
 export default class extends Vue {
   loadingText = ''
   testSet: TestSet | null = null
+  testResult: TestEntry[] = []
 
   mounted (): void {
     this.loadTestSet('/snd/test.json')
@@ -71,6 +76,7 @@ export default class extends Vue {
 
   showResult (result: TestEntry[]): void {
     console.log(result)
+    this.testResult = result
   }
 }
 </script>

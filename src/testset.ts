@@ -18,10 +18,9 @@ export async function loadTestSet (jsonURL: string): Promise<TestSet> {
 
       const blob = await (await fetch(url)).blob()
       const blobURL = URL.createObjectURL(blob)
-      return {
-        label,
-        audio: new Audio(blobURL)
-      }
+      const audio = new Audio(blobURL)
+      if (entry.volume) audio.volume = entry.volume
+      return { label, audio }
     }))
   }
 }

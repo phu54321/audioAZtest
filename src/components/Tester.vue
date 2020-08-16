@@ -34,7 +34,13 @@ export default class extends Vue {
   processIterator (iter: IteratorResult<SortPair<TestEntry>, TestEntry[]>): void {
     if (iter.done) {
       this.pair = undefined
-      this.$emit('result', iter.value)
+
+      const result = iter.value
+      logging.messages.push('=============== Result ===============')
+      for (let i = 0; i < result.length; i++) {
+        logging.messages.push(` - ${i + 1}: ${result[i].label}`)
+      }
+      this.$emit('result', result)
     } else {
       const { left, right } = iter.value
       logging.messages.push(`Comparing ${left.label} to ${right.label}`)

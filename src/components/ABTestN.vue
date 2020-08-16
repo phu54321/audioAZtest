@@ -65,9 +65,11 @@ export default class extends Vue {
   onABTestComplete (): void {
     if (this.winCount[0] > this.winCount[1]) {
       this.reset()
+      logging.messages.push(` - ${this.entry0.label} > ${this.entry1.label}`)
       this.$emit('pick', 0)
     } else {
       this.reset()
+      logging.messages.push(` - ${this.entry0.label} < ${this.entry1.label}`)
       this.$emit('pick', 1)
     }
   }
