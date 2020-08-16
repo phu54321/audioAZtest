@@ -13,7 +13,7 @@
           span 오디오 블라인드 테스트 (w/ ffmpeg)
 
   .container.has-text-centered.m-t-lg(v-if='testSet')
-    tester(:testSet="testSet")
+    tester(:testSet="testSet", @result='showResult')
 
   log-view
 </template>
@@ -21,7 +21,7 @@
 <script lang="ts">
 
 import Vue from 'vue'
-import { loadTestSet, TestSet } from './testset'
+import { loadTestSet, TestSet, TestEntry } from './testset'
 
 import ABTest from '@/components/ABTest.vue'
 import LogView from '@/components/LogView.vue'
@@ -69,6 +69,10 @@ export default Vue.extend({
       } finally {
         this.loadingText = ''
       }
+    },
+
+    showResult (result: TestEntry[]) {
+      console.log(result)
     }
   }
 })

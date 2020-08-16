@@ -1,12 +1,13 @@
 <template lang='pug'>
 .container.has-text-centered.m-t-lg
-  ABTestN(:entry0='testSet.entries[0]', :entry1='testSet.entries[1]', @pick='onPick')
+  ABTestN(v-if='pair', :entry0='testSet.entries[0]', :entry1='testSet.entries[1]', @pick='onPick')
 </template>
 
 <script lang="ts">
 
 import { Vue, Component, Prop } from 'vue-property-decorator'
-import { TestSet } from '@/testset'
+import { TestSet, TestEntry } from '@/testset'
+import { mergeSortGenerator, MergeSortGenerator, SortPair } from '@/utils/asyncMergeSort'
 
 import logging from '@/logging'
 
@@ -21,12 +22,32 @@ import LogView from '@/components/LogView.vue'
 })
 export default class extends Vue {
   @Prop({ required: true }) testSet!: TestSet
-  shuffledAudios: HTMLAudioElement[] = []
-  shuffledIndexes= [0, 0]
+  private pair: SortPair<TestEntry> | undefined
+  private generator!: MergeSortGenerator<TestEntry>
+
+  created (): void {
+    const generator = mergeSortGenerator(this.testSet.entries)
+    this.generator = generator
+    this.processIterator(generator.next())
+  }
+
+  processIterator (iter: IteratorResult<SortPair<TestEntry>, TestEntry[]>): void {
+    if (iter.done) {
+      this.pair = undefined
+      this.$emit('result', iter.value)
+    } else {
+      const { left, right } = iter.value
+      logging.messages.push(`Comparing ${left.label} to ${right.label}`)
+      this.pair = iter.value
+    }
+  }
 
   onPick (idx: number): void {
-    const pickedEntry = this.testSet.entries[this.shuffledIndexes[idx]]
-    logging.messages.push(`[abtestn] Picked ${pickedEntry.label}`)
+    if (idx === 0) {
+      this.processIterator(this.generator.next(-1))
+    } else {
+      this.processIterator(this.generator.next(1))
+    }
   }
 }
 </script>
