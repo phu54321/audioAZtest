@@ -1,8 +1,5 @@
 <template lang='pug'>
 #app
-  b-modal(:active='!!testResult.length', trap-focus, :destroy-on-hide='true', :can-cancel='false')
-    result-screen(:result='testResult')
-
   b-loading(:active='!!loadingText')
     .loading-icon
     .loading-text(v-if='loadingText') {{loadingText}}
@@ -15,10 +12,10 @@
           b-icon.m-r-md.m-t-xs(icon='volume-high', size='is-medium')
           span 오디오 블라인드 테스트
 
-  .container.has-text-centered.m-t-lg(v-if='testSet')
-    .title {{testSet.label}}
-    a(href='permaLink') {{permaLink}}
-    tester(:testSet="testSet", @result='showResult')
+  .container.has-text-centered.m-t-lg
+    test-runner(v-if='appMode == "runner"', :testSet='testSet')
+    div(v-else-if='appMode == "editor"')
+      // TODO: add editor here
 
 </template>
 
@@ -27,27 +24,24 @@
 import { Vue, Component } from 'vue-property-decorator'
 import { loadTestSet, TestSet, TestEntry } from './testset'
 
-import ABTest from '@/components/ABTest.vue'
-import LogView from '@/components/LogView.vue'
-import Tester from '@/components/Tester.vue'
-import ResultScreen from '@/components/ResultScreen.vue'
+import TestRunner from '@/pages/TestRunner.vue'
 
 import './style.scss'
 
 export type TestHistoryData = 'A' | 'B'
 
+type AppMode = 'runner' | 'editor' | null
+
 @Component({
   components: {
-    ABTest,
-    LogView,
-    Tester,
-    ResultScreen
+    TestRunner
   }
 })
 export default class extends Vue {
   loadingText = ''
   testSet: TestSet | null = null
   testResult: TestEntry[] = []
+  appMode: AppMode = null
   jsonUrl: string | null = null
 
   mounted (): void {
@@ -80,7 +74,8 @@ export default class extends Vue {
   async loadTestSet (jsonUrl: string): Promise<void> {
     this.loadingText = '테스트 로딩중...'
     try {
-      this.testSet = await loadTestSet(jsonUrl) // TODO: get input
+      this.testSet = await loadTestSet(jsonUrl)
+      this.appMode = 'runner'
     } finally {
       this.loadingText = ''
     }
