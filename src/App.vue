@@ -75,7 +75,6 @@ export default class extends Vue {
   }
 
   showResult (result: TestEntry[]): void {
-    console.log(result)
     this.testResult = result
   }
 }

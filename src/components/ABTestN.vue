@@ -49,7 +49,6 @@ export default class extends Vue {
     const pickedEntry = (entryIdx === 0) ? this.entry0 : this.entry1
     Vue.set(this.winCount, entryIdx, this.winCount[entryIdx] + 1)
     logging.messages.push(`Picked ${pickedEntry.label}`)
-    console.log(this.winCount, this.n, this.testCount)
 
     if (this.testCount === this.n) {
       this.onABTestComplete()
