@@ -14,6 +14,20 @@ import logging from '@/utils/logging'
 import ABTestN from '@/components/ABTestN.vue'
 import LogView from '@/components/LogView.vue'
 
+/**
+ * Shuffles array in place.
+ * @param {Array} a items An array containing the items.
+ */
+function shuffle <T> (a: T[]) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    const x = a[i]
+    a[i] = a[j]
+    a[j] = x
+  }
+  return a
+}
+
 @Component({
   components: {
     ABTestN,
@@ -26,7 +40,10 @@ export default class extends Vue {
   private generator!: MergeSortGenerator<TestEntry>
 
   created (): void {
-    const generator = mergeSortGenerator(this.testSet.entries)
+    const entries = this.testSet.entries
+    shuffle(entries)
+
+    const generator = mergeSortGenerator(entries)
     this.generator = generator
     this.processIterator(generator.next())
   }
