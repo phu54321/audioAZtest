@@ -32,8 +32,6 @@ import LogView from '@/components/LogView.vue'
 import Tester from '@/components/Tester.vue'
 import ResultScreen from '@/components/ResultScreen.vue'
 
-import queryString from 'query-string'
-
 import './style.scss'
 
 export type TestHistoryData = 'A' | 'B'
@@ -53,13 +51,12 @@ export default class extends Vue {
   jsonUrl: string | null = null
 
   mounted (): void {
-    const parsed = queryString.parse(location.search)
-    let jsonUrl = parsed.jsonUrl || prompt('테스트 json 파일을 입력하세요')
+    const parsed = location.hash ? location.hash.substr(1) : ''
+    const jsonUrl = parsed || prompt('테스트 json 파일을 입력하세요')
     if (!jsonUrl) {
       alert('테스트 json이 필요합니다.')
       return
     }
-    if (Array.isArray(jsonUrl)) jsonUrl = jsonUrl[0]
 
     this.jsonUrl = jsonUrl
     try {
@@ -73,7 +70,7 @@ export default class extends Vue {
   get permaLink (): string {
     const htmlUrl = window.location.href.split('?')[0].split('#')[0]
     if (!this.jsonUrl) return htmlUrl
-    else return `${htmlUrl}?jsonUrl=${encodeURIComponent(this.jsonUrl)}`
+    else return `${htmlUrl}#${encodeURIComponent(this.jsonUrl)}`
   }
 
   beforeDestroy (): void {

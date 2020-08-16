@@ -2,10 +2,8 @@
 .abtest
   table.table.is-bordered.margin-center
     tr
-      th
-        a(href='#', @click='pickAudio(0)') 1번 선택
-      th
-        a(href='#', @click='pickAudio(1)') 2번 선택
+      th(@click='pickAudio(0)') 1번 선택
+      th(@click='pickAudio(1)') 2번 선택
     tr
       td.has-text-centered
         div(@click='playAudio(0)')
