@@ -13,7 +13,7 @@
         .title
           b-icon.m-r-xs.m-t-xs(icon='ab-testing', size='is-medium')
           b-icon.m-r-md.m-t-xs(icon='volume-high', size='is-medium')
-          span 오디오 블라인드 테스트 (w/ ffmpeg)
+          span 오디오 블라인드 테스트
 
   .container.has-text-centered.m-t-lg(v-if='testSet')
     .title {{testSet.label}}
