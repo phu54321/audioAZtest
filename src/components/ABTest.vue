@@ -1,5 +1,6 @@
 <template lang='pug'>
 .abtest
+  .title 둘 중 더 소리가 좋은걸 선택하세요.
   table.table.is-bordered.margin-center
     tr
       th
@@ -81,7 +82,9 @@ export default Vue.extend({
   methods: {
     pauseAudio () {
       this.audioA.pause()
+      this.audioA.currentTime = 0
       this.audioB.pause()
+      this.audioB.currentTime = 0
     },
 
     playAudio (idx: number) {
@@ -91,6 +94,7 @@ export default Vue.extend({
     },
 
     pickAudio (idx: number) {
+      this.pauseAudio()
       this.$emit('pick', idx)
     }
   }
