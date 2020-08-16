@@ -3,6 +3,7 @@
   b-loading(:active='!!loadingText')
     .loading-icon
     .loading-text(v-if='loadingText') {{loadingText}}
+
   section.hero.is-primary
     .hero-body
       .container
@@ -11,156 +12,53 @@
           b-icon.m-r-md.m-t-xs(icon='volume-high', size='is-medium')
           span 오디오 블라인드 테스트 (w/ ffmpeg)
 
-  .container.has-text-centered.m-t-lg
-    b-steps(v-model='activeStep', :has-navigation='false')
-      b-step-item(label='Audio')
-        .title 1. 음원 파일을 선택하세요
-        .file.has-name.flex-centered
-          label.file-label
-            input.file-input(type='file', name='audio', @change='onFileInput')
-            span.file-cta
-              b-icon.file-icon(icon='file-upload')
-              .file-label 업로드
-            span.file-name {{ fileName || '음원파일을 선택하세요' }}
+  .container.has-text-centered.m-t-lg(v-if='testReady')
+    .title 둘 중 더 소리가 좋은걸 선택하세요.
 
-      b-step-item(label='Codec')
-        .title 2. 비교할 코덱 2개를 선택하세요
+    ABTest(:audioA='currentShuffledAudio[0]', :audioB='currentShuffledAudio[1]', @pick='onPick')
 
-        b-field
-          b-select(v-model='pipelines[0]',  placeholder='비교소리 A', expanded)
-            option(v-for='pipeline in pipelineList', :value='pipeline', :key='pipeline.name') {{ pipeline.name }}
-        b-field
-          b-select(v-model='pipelines[1]',  placeholder='비교소리 B', expanded)
-            option(v-for='pipeline in pipelineList', :value='pipeline', :key='pipeline.name') {{ pipeline.name }}
+    .message
+      .message-header 결과 요약
+      .message-body.has-text-left
+        p
+          i 파일: {{testSet.label}}
+        p
+          b.m-r-xs 비교군 A:&nbsp;
+          | {{testSet.entries[0].label}}
+        p
+          b.m-r-xs 비교군 B:&nbsp;
+          | {{testSet.entries[1].label}}
 
-        b-button(type='is-primary', :disabled='!isPipelineSelected', @click='prepareAudioTest') 테스트 시작
+        table.table.is-bordered.is-fullwidth.m-t-md
+          th(:colspan='testHistoryGridColumnsPerRow') 테스트 결과
+          tr(v-for='row in testHistoryGridRows')
+            td.is-w10p.has-text-centered(
+              v-for='col in row',
+              :class='{"grid-bg-A": col === "A", "grid-bg-B": col === "B"}'
+            ) {{col}}
 
-      b-step-item(label='Blind testing')
-        .title 3. 둘 중 더 소리가 좋은걸 선택하세요.
-
-        table.table.is-bordered.margin-center
-          tr
-            th
-              a(href='#', @click='pickShuffledAudio(0)') 1번 선택
-            th
-              a(href='#', @click='pickShuffledAudio(1)') 2번 선택
-          tr
-            td.has-text-centered
-              div(@click='playShuffledAudio(0)')
-                b-icon(icon='play-circle-outline', size='is-large')
-              b-tooltip(label='다운로드', direction='is-bottom')
-                b-button.m-t-sm(@click='downloadShuffledAudio(0)')
-                  b-icon(icon='download', size='is-small')
-                  span 다운로드
-            td.has-text-centered
-              div(@click='playShuffledAudio(1)')
-                b-icon(icon='play-circle-outline', size='is-large')
-              b-tooltip(label='다운로드', direction='is-bottom')
-                b-button.m-t-sm(@click='downloadShuffledAudio(1)')
-                  b-icon(icon='download', size='is-small')
-                  span 다운로드
-
-        b-slider.m-b-lg(v-model='currentAudioProgress', :tooltip='false')
-
-        .message
-          .message-header 결과 요약
-          .message-body.has-text-left
-            p
-              i 파일: {{fileName}}
-            p(v-if='isPipelineSelected')
-              b.m-r-xs 비교군 A:&nbsp;
-              | {{pipelines[0].name}}
-            p(v-if='isPipelineSelected')
-              b.m-r-xs 비교군 B:&nbsp;
-              | {{pipelines[1].name}}
-
-            table.table.is-bordered.is-fullwidth.m-t-md
-              th(:colspan='testHistoryGridColumnsPerRow') 테스트 결과
-              tr(v-for='row in testHistoryGridRows')
-                td.is-w10p.has-text-centered(
-                  v-for='col in row',
-                  :class='{"grid-bg-A": col === "A", "grid-bg-B": col === "B"}'
-                ) {{col}}
-
-  footer.log-footer
-    ul.log-box(v-chat-scroll='{always: false}')
-      li.log(v-for='message of messages') {{message}}
+  log-view
 </template>
 
 <script lang="ts">
 
 import Vue from 'vue'
-import HelloWorld from './components/HelloWorld.vue'
-import { createWorker } from './ffmpeg'
-import AudioPipelineList from './audioPipeline/list'
-import { FFmpegAudioPipeline, applyAudioPipeline } from './audioPipeline'
-import { saveAs } from 'file-saver'
-import logging from './logging'
+import logging from '@/logging'
+import { loadTestSet, TestSet } from './testset'
 
-const STEP_AUDIO = 0
-const STEP_PIPELINE = 1
-const STEP_ABTEST = 2
+import ABTest from '@/components/ABTest.vue'
+import LogView from '@/components/LogView.vue'
 
-type TestHistoryData = 'A' | 'B'
+export type TestHistoryData = 'A' | 'B'
 
 export default Vue.extend({
-  beforeDestroy () {
-    this.freeAudio()
-  },
-  data () {
-    return {
-      recomputeTick: 0,
-      recomputeTickInterval: null as any,
-
-      // Audio selection related
-      loadingText: '',
-      activeStep: STEP_AUDIO,
-      origWavData: null as Uint8Array | null,
-      fileName: '',
-
-      // Pipeline related
-      pipelines: [null, null] as (FFmpegAudioPipeline | null)[],
-      convertedAudios: [] as HTMLAudioElement[],
-
-      // AB test related
-      currentTestId: -1,
-      currentShuffledAudio: [] as HTMLAudioElement[],
-      playingAudio: null as HTMLAudioElement | null,
-      shuffledTestAIndex: 0,
-      testHistory: [] as TestHistoryData[]
-    }
-  },
-  watch: {
-    activeStep () {
-      this.stopAllAudio()
-    }
+  components: {
+    ABTest,
+    LogView
   },
   computed: {
     messages (): string[] {
       return logging
-    },
-    currentAudioTime (): number {
-      this.recomputeTick  // eslint-disable-line
-      if (!this.playingAudio) return 0
-      return this.playingAudio.currentTime
-    },
-    currentAudioProgress: {
-      get (): number {
-        this.recomputeTick  // eslint-disable-line
-        if (!this.playingAudio) return 0
-        return (this.playingAudio.currentTime / this.playingAudio.duration * 100)
-      },
-      set (newValue: number) {
-        if (!this.playingAudio) return
-        if (Math.abs(this.currentAudioProgress - newValue) < 1e-6) return
-        this.playingAudio.currentTime = this.playingAudio.duration * newValue / 100
-      }
-    },
-    pipelineList () {
-      return AudioPipelineList
-    },
-    isPipelineSelected (): boolean {
-      return !!(this.pipelines[0] && this.pipelines[1])
     },
     testHistoryGridColumnsPerRow () { return 10 },
     testHistoryGridRows (): string[][] {
@@ -191,128 +89,81 @@ export default Vue.extend({
     }
   },
   created () {
-    this.recomputeTickInterval = setInterval(() => {
-      this.recomputeTick++
-    }, 1 / 30)
+    this.loadTestSet('/snd/test.json')
   },
-  destroyed () {
-    clearInterval(this.recomputeTickInterval)
+  beforeDestroy () {
+    this.freeTestSet()
+  },
+  data () {
+    return {
+      loadingText: '',
+
+      // Audio selection related
+      testSet: null as TestSet | null,
+      testReady: false,
+
+      // AB test related
+      currentShuffledAudio: [] as HTMLAudioElement[],
+      shuffledTestAIndex: 0,
+
+      testHistory: [] as TestHistoryData[]
+    }
   },
   methods: {
-    async freeAudio () {
-      for (const audio of this.convertedAudios) {
+    async freeTestSet () {
+      if (!this.testSet) return
+
+      for (const { audio } of this.testSet.entries) {
         audio.pause()
         audio.remove()
       }
-      this.convertedAudios = []
+      this.testSet = null
       this.currentShuffledAudio = []
     },
 
-    onFileInput (ev: Event) {
-      const files = (ev.target as HTMLInputElement).files
-      const file = files ? files[0] : null
-      if (file) {
-        const fileName = file.name
-        this.loadingText = 'WAV로 파일 불러들이는 중...'
-
-        // Read & convert to WAV
-        const reader = new FileReader()
-        reader.readAsArrayBuffer(file)
-        reader.onload = async () => {
-          try {
-            const fileData = reader.result as ArrayBuffer
-            const ext = fileName.slice(fileName.search('\\.') || fileName.length)
-
-            const worker = await createWorker()
-            await worker.writeText(`rawInput${ext}`, new Uint8Array(fileData))
-            await worker.run(`-i rawInput${ext} input.wav`)
-            const { data } = await worker.read('input.wav')
-            worker.worker.terminate()
-
-            this.origWavData = data
-            this.fileName = fileName
-            this.activeStep = STEP_PIPELINE
-          } catch (e) {
-            // IMPORTANT!
-            // To prevent RangeError at createWorker.js you should manually modify
-            // d = Uint8Array.from({...data, ~~~~~}); to d = Uint8Array.from(data);
-            // at @ffmpeg/ffmpeg/src/createWorker.js
-            this.$buefy.dialog.alert({
-              title: '음원 로딩에 실패했습니다.',
-              message: e.toString()
-            })
-          } finally {
-            this.loadingText = ''
-          }
-        }
-      }
-    },
-
-    async prepareAudioTest () {
-      this.loadingText = '오디오 변환중...'
+    async loadTestSet (jsonUrl: string) {
+      this.loadingText = '테스트 로딩중...'
       try {
-        const promises = this.pipelines.map(async pipeline => applyAudioPipeline(pipeline!, this.origWavData!))
-        const converted = await Promise.all(promises)
-
-        this.convertedAudios = converted.map(wav => {
-          const audio = new Audio()
-          const blob = new Blob([wav], { type: 'audio/wav' })
-          const url = window.URL.createObjectURL(blob)
-          audio.src = url
-          return audio
-        })
-        this.testHistory = []
-        this.activeStep = STEP_ABTEST
-
-        this.initAudioTest()
+        this.testSet = await loadTestSet(jsonUrl) // TODO: get input
+        this.shuffleAudioAndPlay()
       } finally {
         this.loadingText = ''
       }
     },
 
-    initAudioTest () {
-      const [audioA, audioB] = this.convertedAudios
+    shuffleAudioAndPlay () {
+      if (!this.testSet) throw new Error('testset not loaded')
+      const [entryA, entryB] = this.testSet.entries
 
-      this.stopAllAudio()
+      this.resetAllAudio()
 
       if (Math.random() >= 0.5) {
-        this.currentShuffledAudio = [audioA, audioB]
+        this.currentShuffledAudio = [entryA.audio, entryB.audio]
         this.shuffledTestAIndex = 0
       } else {
-        this.currentShuffledAudio = [audioB, audioA]
+        this.currentShuffledAudio = [entryB.audio, entryA.audio]
         this.shuffledTestAIndex = 1
       }
-
-      this.currentTestId = (Math.random() * 1000000) | 0
+      this.testReady = true
     },
 
-    stopAllAudio () {
-      for (const audio of this.convertedAudios) {
+    resetAllAudio () {
+      if (!this.testSet) throw new Error('testset not loaded')
+      this.testReady = false
+      for (const { audio } of this.testSet.entries) {
         audio.pause()
         audio.currentTime = 0
       }
     },
 
-    playShuffledAudio (idx: number) {
-      this.stopAllAudio()
-      this.playingAudio = this.currentShuffledAudio[idx]
-      this.playingAudio.play()
-    },
-
-    async downloadShuffledAudio (idx: number) {
-      const url = this.currentShuffledAudio[idx].src
-      const blob = await fetch(url).then(r => r.blob())
-      saveAs(blob, `ABtest_${this.currentTestId}_${idx}.wav`)
-    },
-
-    pickShuffledAudio (idx: number) {
+    onPick (idx: number) {
       if (this.shuffledTestAIndex === idx) {
         this.testHistory.push('A')
       } else {
         this.testHistory.push('B')
       }
 
-      this.initAudioTest()
+      this.shuffleAudioAndPlay()
     }
   }
 })
