@@ -12,9 +12,9 @@
           b-icon.m-r-md.m-t-xs(icon='volume-high', size='is-medium')
           span 오디오 블라인드 테스트
 
-          span.button-appmode.is-pulled-right(v-if='appMode == "runner"', @click='setMode("editor")')
+          span.has-tooltip-left.button-appmode.is-pulled-right(v-if='appMode == "runner"', @click='setMode("editor")', data-tooltip='블라인드 테스트 수정')
             b-icon(icon='pencil-outline', size='is-medium')
-          span.button-appmode.is-pulled-right(v-if='appMode == "editor"', @click='setMode("runner")')
+          span.has-tooltip-left.button-appmode.is-pulled-right(v-if='appMode == "editor"', @click='setMode("runner")', data-tooltip='블라인드 테스트 시작')
             b-icon(icon='play-outline', size='is-medium')
 
   .container.has-text-centered.m-t-lg.m-l-lg.m-r-lg

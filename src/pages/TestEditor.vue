@@ -1,14 +1,16 @@
 <template lang='pug'>
 .test-editor.has-text-justified
-  b-field(label="케이스 제목")
+  h1.title [테스트 수정]
+
+  b-field(label="테스트 제목")
     b-input(v-model="testJson.label", placeholder='제목 없음')
 
   table.table.is-fullwidth.is-hoverable
     tr.thead
-      th 케이스 제목
+      th 케이스 이름
       th 사운드 파일 URL
       th 음량 (0-1)
-      th
+      th 삭제
     tr(v-for='entry, idx of testJson.entries')
       td
         b-input(v-model="entry.label", placeholder='제목 없음')
@@ -16,10 +18,10 @@
         b-input(v-model="entry.url", placeholder='https://')
       td
         b-slider(v-model="entry.volume", :min='0', :max='1', :step='0.01')
-      td(@click='removeEntry(idx)')
+      td(@click='removeEntry(idx)', data-tooltip='케이스 삭제')
         b-icon(icon='close')
 
-  b-button.is-pulled-right(@click='addEntry')
+  b-button.is-pulled-right.m-b-lg(@click='addEntry', data-tooltip='케이스 추가')
     b-icon(icon='plus')
 
 </template>

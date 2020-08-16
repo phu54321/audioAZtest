@@ -5,6 +5,7 @@ import Buefy from 'buefy'
 import 'buefy/dist/buefy.css'
 import './spacing.scss'
 import '@mdi/font/css/materialdesignicons.min.css'
+import '@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const VueChatScroll = require('vue-chat-scroll')
