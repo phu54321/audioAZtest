@@ -56,7 +56,11 @@ export default class extends Vue {
   mounted (): void {
     if (location.hash) {
       this.testJson = JSON.parse(p64Decode(location.hash.substr(1)))
-      this.appMode = 'runner'
+      if (/[?&]edit/.test(location.search)) {
+        this.appMode = 'editor'
+      } else {
+        this.appMode = 'runner'
+      }
     }
   }
 
