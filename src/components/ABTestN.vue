@@ -5,7 +5,7 @@
 
 <script lang="ts">
 
-import { Vue, Component, Prop } from 'vue-property-decorator'
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import { TestEntry } from '@/testset'
 
 import logging from '@/utils/logging'
@@ -27,6 +27,20 @@ export default class extends Vue {
   winCount = [0, 0]
 
   created (): void {
+    this.shuffleAudioAndPlay()
+  }
+
+  get entryChangeWatcher (): number {
+    // eslint-disable-next-line no-unused-expressions
+    this.entry0
+    // eslint-disable-next-line no-unused-expressions
+    this.entry1
+
+    return Date.now()
+  }
+
+  @Watch('entryChangeWatcher')
+  onEntryChange (): void {
     this.shuffleAudioAndPlay()
   }
 
