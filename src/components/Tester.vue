@@ -8,7 +8,7 @@
 
 import { Vue, Component, Prop } from 'vue-property-decorator'
 import { TestSet, TestEntry } from '@/testset'
-import { mergeSort } from '@/utils/asyncMergeSort'
+import { shellSort } from '@/utils/asyncSort'
 
 import logging from '@/utils/logging'
 
@@ -51,7 +51,7 @@ export default class extends Vue {
     const entries = this.testSet.entries
     shuffle(entries)
 
-    mergeSort(entries, this.comparator).then(this.showResult)
+    shellSort(entries, this.comparator).then(this.showResult)
   }
 
   comparator (left: TestEntry, right: TestEntry): Promise<number> {
