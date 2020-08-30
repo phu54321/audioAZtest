@@ -1,13 +1,16 @@
 <template lang='pug'>
-.test-runner(v-if='testSet')
+.test-runner
   b-loading(:active='!!loadingText')
-    .loading-icon
-    .loading-text(v-if='loadingText') {{loadingText}}
+    .container.loading-text {{loadingText}}
+      ul
+        li.m-b-xs(v-for='(progress, url) of updateProgress')
+          b-progress(:value='progress', type="is-info", size='is-medium', show-value) {{url}}
 
-  .title {{testSet.label}}
-  tester(:testSet="testSet", @result='showResult')
-  b-modal(:active='!!testResult.length', trap-focus, :destroy-on-hide='true', :can-cancel='false')
-    result-screen(:result='testResult')
+  div(v-if='testSet')
+    .title {{testSet.label}}
+    tester(:testSet="testSet", @result='showResult')
+    b-modal(:active='!!testResult.length', trap-focus, :destroy-on-hide='true', :can-cancel='false')
+      result-screen(:result='testResult')
 
 </template>
 
@@ -32,13 +35,17 @@ type AppMode = 'runner' | 'editor' | null
 export default class extends Vue {
   @Prop({ required: true }) testJson!: TestJson
   loadingText = ''
+  updateProgress = {} as {[url: string]: number}
   testSet: TestSet| null = null
   testResult: TestEntry[] = []
 
   async created (): Promise<void> {
     this.loadingText = '테스트 로딩중...'
     try {
-      this.testSet = await loadTestSet(this.testJson)
+      this.updateProgress = {}
+      this.testSet = await loadTestSet(this.testJson, (url, progress) => {
+        this.$set(this.updateProgress, url, progress)
+      })
     } finally {
       this.loadingText = ''
     }
