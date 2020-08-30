@@ -1,9 +1,5 @@
 <template lang='pug'>
 #app
-  b-loading(:active='!!loadingText')
-    .loading-icon
-    .loading-text(v-if='loadingText') {{loadingText}}
-
   section.hero.is-primary
     .hero-body
       .container
@@ -18,7 +14,7 @@
             b-icon(icon='play-outline', size='is-medium')
 
   .container.has-text-centered.m-t-lg.p-l-lg.p-r-lg
-    test-runner(v-if='appMode == "runner"', :testJson='testJson', @loadingMsg='updateLoadingText')
+    test-runner(v-if='appMode == "runner"', :testJson='testJson')
     test-editor(v-else-if='appMode == "editor"', :testJson='testJson')
 
 </template>
@@ -51,7 +47,6 @@ function emptyTestJson (): TestJson {
   }
 })
 export default class extends Vue {
-  loadingText = ''
   testJson = emptyTestJson()
 
   testResult: TestEntry[] = []
@@ -72,11 +67,6 @@ export default class extends Vue {
   @Watch('testJson', { deep: true })
   onTestJsonChange (s: TestJson): void {
     location.href = `#${p64Encode(JSON.stringify(s))}`
-  }
-
-  updateLoadingText (text: string | null): void {
-    if (text) this.loadingText = text
-    else this.loadingText = ''
   }
 }
 </script>

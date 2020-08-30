@@ -1,5 +1,9 @@
 <template lang='pug'>
 .test-runner(v-if='testSet')
+  b-loading(:active='!!loadingText')
+    .loading-icon
+    .loading-text(v-if='loadingText') {{loadingText}}
+
   .title {{testSet.label}}
   tester(:testSet="testSet", @result='showResult')
   b-modal(:active='!!testResult.length', trap-focus, :destroy-on-hide='true', :can-cancel='false')
@@ -27,15 +31,16 @@ type AppMode = 'runner' | 'editor' | null
 })
 export default class extends Vue {
   @Prop({ required: true }) testJson!: TestJson
+  loadingText = ''
   testSet: TestSet| null = null
   testResult: TestEntry[] = []
 
   async created (): Promise<void> {
-    this.$emit('loadingMsg', '테스트 로딩중...')
+    this.loadingText = '테스트 로딩중...'
     try {
       this.testSet = await loadTestSet(this.testJson)
     } finally {
-      this.$emit('loadingMsg', null)
+      this.loadingText = ''
     }
   }
 
