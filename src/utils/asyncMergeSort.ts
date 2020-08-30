@@ -3,24 +3,26 @@ export type SortPair<T> = {
   right: T;
 }
 
-export type MergeSortGenerator<T> = Generator<SortPair<T>, T[], number>
+type Comparator<T> = (left: T, right: T) => Promise<number>
 
-export function * mergeSortGenerator<T> (entries: T[]) : MergeSortGenerator<T> {
+export async function mergeSort<T> (entries: T[], comparator: Comparator<T>): Promise<T[]> {
   if (entries.length <= 1) return entries
 
   const midPoint = (entries.length / 2) | 0
-  const left = yield * mergeSortGenerator(entries.slice(0, midPoint))
-  const right = yield * mergeSortGenerator(entries.slice(midPoint))
-  return yield * merge(left, right)
+  const [left, right] = await Promise.all([
+    mergeSort(entries.slice(0, midPoint), comparator),
+    mergeSort(entries.slice(midPoint), comparator)
+  ])
+  return merge(left, right, comparator)
 }
 
-function * merge <T> (left: T[], right: T[]): MergeSortGenerator<T> {
+async function merge <T> (left: T[], right: T[], comparator: Comparator<T>): Promise<T[]> {
   let leftIndex = 0
   let rightIndex = 0
   const output = []
 
   while (leftIndex < left.length && rightIndex < right.length) {
-    const compare = yield { left: left[leftIndex], right: right[rightIndex] }
+    const compare = await comparator(left[leftIndex], right[rightIndex])
     if (compare < 0) output.push(left[leftIndex++])
     else output.push(right[rightIndex++])
   }
