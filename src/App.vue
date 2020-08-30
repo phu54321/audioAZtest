@@ -17,7 +17,7 @@
           span.has-tooltip-left.button-appmode.is-pulled-right(v-if='appMode == "editor"', @click='setMode("runner")', data-tooltip='블라인드 테스트 시작')
             b-icon(icon='play-outline', size='is-medium')
 
-  .container.has-text-centered.m-t-lg.m-l-lg.m-r-lg
+  .container.has-text-centered.m-t-lg.p-l-lg.p-r-lg
     test-runner(v-if='appMode == "runner"', :testJson='testJson', @loadingMsg='updateLoadingText')
     test-editor(v-else-if='appMode == "editor"', :testJson='testJson')
 
