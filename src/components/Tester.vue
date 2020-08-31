@@ -1,7 +1,13 @@
 <template lang='pug'>
 .container.has-text-centered.m-t-lg
   .notification 둘 중 더 소리가 좋은걸 선택하세요. (\#{{testNo}})
-  ABTestN(v-if='currentComparison', :entry0='currentComparison.left', :entry1='currentComparison.right', :n='1', @pick='onPick')
+  ABTestN(
+    v-if='currentComparison',
+    :entry0='currentComparison.left',
+    :entry1='currentComparison.right',
+    :n='testSet.comparisonPerPair',
+    @pick='onPick'
+  )
 </template>
 
 <script lang="ts">

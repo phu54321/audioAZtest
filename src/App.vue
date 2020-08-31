@@ -36,7 +36,8 @@ type AppMode = 'runner' | 'editor'
 function emptyTestJson (): TestJson {
   return {
     label: '',
-    entries: []
+    entries: [],
+    comparisonPerPair: 1
   }
 }
 

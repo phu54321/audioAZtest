@@ -8,6 +8,7 @@ export interface TestEntry {
 export interface TestSet {
   label: string
   entries: TestEntry[]
+  comparisonPerPair: number
 }
 
 export interface TestJsonEntry {
@@ -19,6 +20,7 @@ export interface TestJsonEntry {
 export interface TestJson {
   label: string
   entries: TestJsonEntry[]
+  comparisonPerPair: number | undefined
 }
 
 export type AudioLoadProgressCallback = (url: string, percent: number) => void
@@ -43,6 +45,7 @@ export async function loadTestSet (
       const audio = new Audio(blobURL)
       if (entry.volume) audio.volume = entry.volume
       return { label, audio }
-    }))
+    })),
+    comparisonPerPair: spec.comparisonPerPair || 1
   }
 }

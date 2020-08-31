@@ -2,8 +2,16 @@
 .test-editor.has-text-justified
   h1.title [테스트 수정]
 
-  b-field(label="테스트 제목")
-    b-input(v-model="testJson.label", placeholder='제목 없음')
+  .columns
+    .column.is-three-quarters
+      b-field(label="테스트 제목")
+        b-input(v-model="testJson.label", placeholder='제목 없음')
+    .column
+      b-field(label="A-B 별 테스트할 횟수")
+        b-numberinput(v-model="testJson.comparisonPerPair", :placeholder='1')
+
+  b-button.is-pulled-right.m-t-lg(@click='addEntry', data-tooltip='케이스 추가')
+    b-icon(icon='plus')
 
   table.table.is-fullwidth.is-hoverable
     tr.thead
@@ -18,11 +26,9 @@
         b-input(v-model="entry.url", placeholder='https://')
       td
         b-slider(v-model="entry.volume", :min='0', :max='1', :step='0.01')
-      td(@click='removeEntry(idx)', data-tooltip='케이스 삭제')
-        b-icon(icon='close')
-
-  b-button.is-pulled-right.m-b-lg(@click='addEntry', data-tooltip='케이스 추가')
-    b-icon(icon='plus')
+      td(data-tooltip='케이스 삭제')
+        b-button(@click='removeEntry(idx)')
+          b-icon(icon='close')
 
 </template>
 
