@@ -13,7 +13,7 @@
   b-button.is-pulled-right.m-t-lg(@click='addEntry', data-tooltip='케이스 추가')
     b-icon(icon='plus')
 
-  table.table.is-fullwidth.is-hoverable
+  table.table.is-fullwidth.is-hoverable.is-narrow
     tr.thead
       th 케이스 이름
       th 사운드 파일 URL
