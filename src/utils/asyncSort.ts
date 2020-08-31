@@ -19,17 +19,58 @@ export async function shellSort<T> (entries: T[], comparator: Comparator<T>): Pr
   return a
 }
 
+interface InsertionSortSubtask {
+  completed: boolean
+  startCursor: number
+  currentHighCursor: number
+}
+
 export async function insertionSort<T> (entries: T[], comparator: Comparator<T>): Promise<T[]> {
   const a = entries.slice()
   const length = entries.length
-  for (let i = 1; i < length; i++) {
-    const temp = a[i]
-    let j
-    for (j = i; j >= 1 && await comparator(a[j - 1], temp) > 0; j--) {
-      a[j] = a[j - 1]
-    }
-    a[j] = temp
+  const tasks: InsertionSortSubtask[] = []
+  for (let i = 0; i < length; i++) {
+    tasks.push({
+      startCursor: i,
+      currentHighCursor: i,
+      completed: false
+    })
   }
+  tasks[0].completed = true
+
+  const remainingTasks: InsertionSortSubtask[] = tasks.slice(1)
+
+  function noCollisionWithPreviousTasks (task: InsertionSortSubtask): boolean {
+    const { startCursor } = task
+    const prevTask = tasks[startCursor - 1]
+    if (!prevTask.completed) {
+      if (prevTask.currentHighCursor === task.currentHighCursor) return false
+    }
+    return true
+  }
+
+  while (remainingTasks.length) {
+    const taskIdx = Math.random() * remainingTasks.length | 0
+    const task = remainingTasks[taskIdx]
+    if (!noCollisionWithPreviousTasks(task)) continue
+
+    const { currentHighCursor } = task
+    if (await comparator(a[currentHighCursor - 1], a[currentHighCursor]) < 0) {
+      task.completed = true
+      remainingTasks.splice(taskIdx, 1)
+      continue
+    } else {
+      const temp = a[currentHighCursor]
+      a[currentHighCursor] = a[currentHighCursor - 1]
+      a[currentHighCursor - 1] = temp
+      task.currentHighCursor--
+      if (task.currentHighCursor === 0) {
+        task.completed = true
+        remainingTasks.splice(taskIdx, 1)
+      }
+    }
+  }
+
   return a
 }
 
