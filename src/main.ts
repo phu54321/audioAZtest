@@ -2,7 +2,7 @@ import Vue from 'vue'
 import App from './App.vue'
 
 import Buefy from 'buefy'
-import 'buefy/dist/buefy.css'
+import './bulma.scss'
 import './spacing.scss'
 import '@mdi/font/css/materialdesignicons.min.css'
 import '@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css'
