@@ -1,11 +1,10 @@
 <template lang='pug'>
 .container.has-text-centered.m-t-lg
   .notification 둘 중 더 소리가 좋은걸 선택하세요. (\#{{testNo}})
-  ABTestN(
+  RandomABTest(
     v-if='currentComparison',
     :entry0='currentComparison.left',
     :entry1='currentComparison.right',
-    :n='testSet.comparisonPerPair',
     @pick='onPick'
   )
 </template>
@@ -18,7 +17,7 @@ import { shellSort } from '@/utils/asyncSort'
 
 import logging from '@/utils/logging'
 
-import ABTestN from '@/components/ABTestN.vue'
+import RandomABTest from '@/components/RandomABTest.vue'
 import LogView from '@/components/LogView.vue'
 
 /**
@@ -43,7 +42,7 @@ interface PendingComprision {
 
 @Component({
   components: {
-    ABTestN,
+    RandomABTest,
     LogView
   }
 })
@@ -60,7 +59,18 @@ export default class extends Vue {
     shellSort(entries, this.comparator).then(this.showResult)
   }
 
-  comparator (left: TestEntry, right: TestEntry): Promise<number> {
+  async comparator (left: TestEntry, right: TestEntry): Promise<number> {
+    const { comparisonPerPair } = this.testSet
+    let leftWin = 0
+    let rightWin = 0
+    for (let i = 0; i < comparisonPerPair; i++) {
+      if (await this.comparatorSingle(left, right) > 0) leftWin++
+      else rightWin++
+    }
+    return (leftWin < rightWin) ? -1 : 1
+  }
+
+  comparatorSingle (left: TestEntry, right: TestEntry): Promise<number> {
     return new Promise(resolve => {
       this.pendingComparisons.push({ left, right, resolve })
       this.runComparisonIfNotRunning()

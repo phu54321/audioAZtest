@@ -8,7 +8,7 @@
         b-input(v-model="testJson.label", placeholder='제목 없음')
     .column
       b-field(label="A-B 별 테스트할 횟수")
-        b-numberinput(v-model="testJson.comparisonPerPair", :placeholder='1')
+        b-numberinput(v-model="testJson.comparisonPerPair", :placeholder='1', :step='2')
 
   b-button.is-pulled-right.m-t-lg(@click='addEntry', data-tooltip='케이스 추가')
     b-icon(icon='plus')

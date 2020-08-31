@@ -20,7 +20,6 @@ import ABTest from '@/components/ABTest.vue'
 export default class extends Vue {
   @Prop({ required: true }) entry0!: TestEntry
   @Prop({ required: true }) entry1!: TestEntry
-  @Prop({ default: 3 }) n!: number
 
   shuffledAudios: HTMLAudioElement[] = []
   shuffledIndexes = [0, 0]
@@ -63,12 +62,7 @@ export default class extends Vue {
     const pickedEntry = (entryIdx === 0) ? this.entry0 : this.entry1
     Vue.set(this.winCount, entryIdx, this.winCount[entryIdx] + 1)
     logging.messages.push(`Picked ${pickedEntry.label}`)
-
-    if (this.testCount === this.n) {
-      this.onABTestComplete()
-    } else {
-      this.shuffleAudioAndPlay()
-    }
+    this.onABTestComplete()
   }
 
   get testCount (): number {
